@@ -140,39 +140,12 @@ void renderEnvironment_t::loadPlugins(const std::string &path)
 bool renderEnvironment_t::getPluginPath(std::string &path)
 {
 #ifdef _WIN32
-	HKEY hkey;
-	DWORD dwType, dwSize;
-	
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,"Software\\YafRay Team\\YafaRay",0,KEY_READ,&hkey)==ERROR_SUCCESS)
-	{
-		dwType = REG_EXPAND_SZ;
-	 	dwSize = MAX_PATH;
-		DWORD dwStat;
-
-		char *pInstallDir=(char *)malloc(MAX_PATH);
-
-  		dwStat = RegQueryValueEx(hkey, TEXT("InstallDir"), NULL, NULL, (LPBYTE)pInstallDir, &dwSize);
-		
-		if (dwStat == NO_ERROR)
-		{
-			path = std::string(pInstallDir) + "\\plugins";
-			free(pInstallDir);
-			RegCloseKey(hkey);
-			return true;
-		}
-		
-		Y_ERROR_ENV << "Couldn't READ \'InstallDir\' value." << yendl;
-		free(pInstallDir);
-		RegCloseKey(hkey);
-	}
-	else Y_ERROR_ENV << "Couldn't find registry key." << yendl;
-
-	Y_ERROR << "Please fix your registry. Maybe you need add/modify" << yendl; 
-	Y_ERROR << "HKEY_LOCAL_MACHINE\\Software\\YafRay Team\\YafRay\\InstallDir" << yendl;
-	Y_ERROR << "key at registry. You can use \"regedit.exe\" to adjust it at" << yendl;
-	Y_ERROR << "your own risk. If you are unsure, reinstall YafaRay" << yendl;
-
-	return false;
+	char* p = new char[255];
+	int len = GetModuleFileName(NULL, p , 255);
+	path = std::string(p, len);
+	path = path.substr(0, path.find_last_of("\\")) + "\\plugins";
+	Y_INFO << "Plugins path : " << path << yendl;
+	return true;
 #else
 	path = std::string(Y_PLUGINPATH);
 	return true;

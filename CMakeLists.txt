@@ -136,7 +136,7 @@ if(NOT WIN32)
 
 	# build flags
 	set(CMAKE_CXX_FLAGS "-Wall" CACHE STRING "Default compiler flags" FORCE)
-	set(YAF_CXX_FLAGS_RELEASE "-O3 -ffast-math")
+	set(YAF_CXX_FLAGS_RELEASE "-O2 -ffast-math")
 	set(YAF_CXX_FLAGS_DEBUG "-ggdb")
 	set(YAF_TARGET_TYPE LIBRARY)
 else(NOT WIN32)
@@ -151,7 +151,7 @@ else(NOT WIN32)
 	# build flags
 	if(MINGW)
 		set(CMAKE_CXX_FLAGS "-Wall" CACHE STRING "Default compiler flags" FORCE)
-		set(YAF_CXX_FLAGS_RELEASE "-O3 -ffast-math")
+		set(YAF_CXX_FLAGS_RELEASE "-O2 -ffast-math")
 		set(YAF_CXX_FLAGS_DEBUG "-ggdb")
 	else(MINGW)
 		set(CMAKE_CXX_FLAGS "/DWIN32 /D_WIN32 /D_USE_MATH_DEFINES /EHsc /MD /nologo" CACHE STRING "Default compiler flags" FORCE)
