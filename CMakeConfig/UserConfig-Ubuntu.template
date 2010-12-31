@@ -1,0 +1,243 @@
+################################################################################
+# UserConfig File                                                              #
+################################################################################
+# Copy this file as UserConfig.txt inside this directory to configure the      #
+# options and paths for your build                                             #
+#                                                                              #
+# Uncoment and set the values of the following lines                           #
+# to configure your build                                                      #
+#                                                                              #
+# NOTE: the defaults work perfectly on most cases                              #
+# don't change anything unless you know what you're doing                      #
+# WARNING: DON'T TOUCH THE NEXT LINE                                           #
+set(YAF_USER_CONFIG ON)
+#                                                                              #
+################################################################################
+
+############################## Build configuration #############################
+#                                                                              #
+# Build font rendering with FreeType                                           #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_Freetype ON)
+
+#                                                                              #
+# Build OpenEXR image I/O plugin                                               #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_OpenEXR ON)
+
+#                                                                              #
+# Build JPEG image I/O plugin                                                  #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_JPEG ON)
+
+#                                                                              #
+# Build PNG image I/O plugin                                                   #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_PNG ON)
+
+#                                                                              #
+# Build TIFF image I/O plugin                                                  #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_TIFF ON)
+
+#                                                                              #
+# Enable XML Loader build                                                      #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_XML_LOADER ON)
+
+#                                                                              #
+# Enable Qt Gui build                                                          #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_QT OFF)
+
+#                                                                              #
+# Enable the YafaRay Python bindings                                           #
+#                                                                              #
+# Default: ON                                                                  #
+#                                                                              #
+
+set(WITH_YAF_PY_BINDINGS ON)
+
+#                                                                              #
+# Enable the YafaRay Ruby bindings                                             #
+#                                                                              #
+# Default: OFF                                                                 #
+#                                                                              #
+
+set(WITH_YAF_RUBY_BINDINGS OFF)
+
+#                                                                              #
+# Enable release mode building of YafaRay                                      #
+# NOTE: This is only to build YafaRay releases, it controls the version number #
+# shown in yafaray-xml and the "draw parameters" parameters badge              #
+#                                                                              #
+# Default: OFF                                                                 #
+#                                                                              #
+
+set(BUILDRELEASE ON)
+
+#                                                                              #
+# Enable debug build mode                                                      #
+#                                                                              #
+# Default: OFF                                                                 #
+#                                                                              #
+
+set(DEBUG_BUILD OFF)
+
+#                                                                              #
+# Embed font for QT GUI (useful for some buggy QT installations)               #
+#                                                                              #
+# Default: OFF                                                                 #
+#                                                                              #
+
+set(EMBED_FONT_QT OFF)
+
+############################ Path setting variables ############################
+#                                                                              #
+# The general install prefix                                                   #
+#                                                                              #
+# Default:                                                                     #
+#          "/usr/local"               on *NIX platforms                        #
+#          "C:\<Program_Files_Dir>"   on Windows platforms                     #
+
+set(USER_INSTALL_PREFIX "/home/megasoft78/yafaray-build")
+
+#                                                                              #
+# The executables instalation dir                                              #
+#                                                                              #
+# this will install the binary executables in ${USER_INSTALL_PREFIX}/bin       #
+# NOTE: under windows platforms this is the installation path                  #
+# and YAF_LIB_DIR is ignored                                                   #
+#                                                                              #
+# Default: bin                                                                 #
+#                                                                              #
+
+#set(YAF_BIN_DIR bin)
+
+#                                                                              #
+# The libraries instalation dir                                                #
+#                                                                              #
+# Default: lib                                                                 #
+#                                                                              #
+# this will install the libraries and plugins in ${USER_INSTALL_PREFIX}/lib    #
+# NOTE: under windows platforms this variable is ignored                       #
+#                                                                              #
+
+#set(YAF_LIB_DIR lib)
+
+#                                                                              #
+# The Python Bindings Installation Path                                        #
+#                                                                              #
+# Default: ${CMAKE_SOURCE_DIR}/install/bindings/python                         #
+#                                                                              #
+# this will install the Python bindings on ${CMAKE_SOURCE_DIR}/bindings/python #
+# you can set this path to your local blender scripts directory
+# or whatever suits you best
+#                                                                              #
+
+#set(YAF_BINDINGS_PY_DIR ${CMAKE_SOURCE_DIR}/install/bindings/python)
+
+#                                                                              #
+# The Ruby Bindings Installation Path                                          #
+#                                                                              #
+# Default: ${CMAKE_SOURCE_DIR}/install/bindings/ruby                           #
+#                                                                              #
+# this will install the Ruby bindings once                                     #
+# ${CMAKE_SOURCE_DIR}/install/bindings/ruby                                    #
+# you can set this path to whatever suits you best                             #
+#                                                                              #
+
+#set(YAF_BINDINGS_RUBY_DIR ${CMAKE_SOURCE_DIR}/install/bindings/ruby)
+
+#                                                                              #
+# More than one path can be set separated by spaces ie.                        #
+#                                                                              #
+#    set(YAF_USER_INCLUDE_DIRS C:/include D:/mydev/include)                    #
+#                                                                              #
+
+#set(YAF_USER_INCLUDE_DIRS "")
+#set(YAF_USER_LIBRARY_DIRS "")
+
+#                                                                              #
+# Set this variables if you wish to append extra compiler flags to your build  #
+#                                                                              #
+
+#set(USER_RELFLAGS "")
+#set(USER_DBGFLAGS "")
+
+######################## Executable location variables #########################
+#                                                                              #
+# Here you can set the paths to search for executables, you can leave blank    #
+# the ones you don't need                                                      #
+#                                                                              #
+# Path to qmake executable                                                     #
+#                                                                              #
+
+#set(YAF_USER_QT_BIN_DIR "")
+
+#                                                                              #
+# Path to swig executable                                                      #
+#                                                                              #
+
+#set(YAF_USER_SWIG_BIN_DIR "")
+
+########################### Extra linking variables ############################
+#                                                                              #
+# the variable YAF_USER_EXTRA_LIBS can be used to add extra linkage in case    #
+# one of your dependencies has a dynamic link that is not included in the      #
+# default YafaRay configuration, for example libXML2 can be dynamically        #
+# linked against some libs like iconv and the default config doesn't include   #
+# iconv as a linking lib, therefore you can use:                               #
+#                                                                              #
+#    set(YAF_USER_EXTRA_LIBS -liconv)           *Syntax for GCC linker         #
+#    or                                                                        #
+#    set(YAF_USER_EXTRA_LIBS libiconv.lib)      *Syntax for MSVC linker        #
+#                                                                              #
+# to add iconv to the library linkage list, again you can specify several libs #
+# at once in a list separated by spaces ie.                                    #
+#                                                                              #
+#    set(YAF_USER_EXTRA_LIBS -lmylib1 -lmylib2 -lmylib2)                       #
+#    or                                                                        #
+#    set(YAF_USER_EXTRA_LIBS libmylib1.lib libmylib2.lib libmylib2.lib)        #
+#                                                                              #
+
+#set(YAF_USER_EXTRA_LIBS "")
+
+############################ Extra defines variable ############################
+#                                                                              #
+# Use this variable to set extra defines that your build might require         #
+#                                                                              #
+
+#set(YAF_USER_EXTRA_DEFS "")
+
+########################### Required Python version ############################
+#                                                                              #
+# Use this variable to set the Python version you want to use for the bindings #
+# Default: 2.6                                                                 #
+#                                                                              #
+
+set(YAF_PY_VERSION 3.1)
+
+################################# End of file ##################################
+
