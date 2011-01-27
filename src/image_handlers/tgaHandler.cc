@@ -558,7 +558,8 @@ bool tgaHandler_t::loadFromFile(const std::string &name)
 		switch(header.bitDepth)
 		{
 			case 8: // Indexed color using ColorMap LUT or grayscale map
-				readDirectImage<yByte>(fp, &tgaHandler_t::processColor8);
+				if(isGray) readDirectImage<yByte>(fp, &tgaHandler_t::processGray8);
+				else readDirectImage<yByte>(fp, &tgaHandler_t::processColor8);
 				break;
 			
 			case 15:
