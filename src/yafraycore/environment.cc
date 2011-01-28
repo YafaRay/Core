@@ -53,9 +53,9 @@ __BEGIN_YAFRAY
 #define Y_ERROR_ENV Y_ERROR ENV_TAG
 #define Y_WARN_ENV Y_WARNING ENV_TAG
 
-#define WarnExist Y_WARN_ENV << "Sorry, " << pname << " already exists!" << yendl
+#define WarnExist Y_WARN_ENV << "Sorry, " << pname << " " << name << " already exists!" << yendl
 
-#define ErrNoType Y_ERROR_ENV << "Type of " << pname << " not specified!" << yendl
+#define ErrNoType Y_ERROR_ENV << pname << " type not specified for \"" << name << "\" node!" << yendl
 #define ErrUnkType(t) Y_ERROR_ENV << "Don't know how to create " << pname << " of type '" << t << "'!" << yendl
 #define ErrOnCreate(t) Y_ERROR_ENV << "No " << pname << " was constructed by plugin '" << t << "'!" << yendl
 
