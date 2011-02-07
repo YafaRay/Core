@@ -86,11 +86,12 @@ union bitTwiddler
 
 inline float fExp2(float x)
 {
+	using namespace std;
 	bitTwiddler ipart, fpart;
 	bitTwiddler expipart;
 
-	x = std::min(x, f_HI);
-	x = std::max(x, f_LOW);
+	x = min(x, f_HI);
+	x = max(x, f_LOW);
 
 	ipart.i = (int)(x - 0.5f);
 	fpart.f = (x - (float)(ipart.i));

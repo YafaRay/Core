@@ -15,18 +15,16 @@ if(WITH_QT)
 	SWIG_ADD_MODULE(yafqt RUBY yafqt.i)
 endif(WITH_QT)
 
-SWIG_LINK_LIBRARIES(yafrayinterface yafaraycore yafarayplugin ${RUBY_LIBRARIES})
+SWIG_LINK_LIBRARIES(yafrayinterface yafaraycore yafarayplugin ${RUBY_LIBRARY})
 
 if(WITH_QT)
-	SWIG_LINK_LIBRARIES(yafqt yafarayqt ${RUBY_LIBRARIES})
+	SWIG_LINK_LIBRARIES(yafqt yafarayqt ${RUBY_LIBRARY})
 endif(WITH_QT)
 
 
 install(TARGETS ${SWIG_MODULE_yafrayinterface_REAL_NAME} DESTINATION ${YAF_BINDINGS_RUBY_DIR})
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/yafrayinterface.rb DESTINATION ${YAF_BINDINGS_RUBY_DIR})
 
 if(WITH_QT)
 	install(TARGETS ${SWIG_MODULE_yafqt_REAL_NAME} DESTINATION ${YAF_BINDINGS_RUBY_DIR})
-	install(FILES ${CMAKE_CURRENT_BINARY_DIR}/yafqt.rb DESTINATION ${YAF_BINDINGS_RUBY_DIR})
 endif(WITH_QT)
 

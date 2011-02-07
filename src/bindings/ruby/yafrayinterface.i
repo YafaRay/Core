@@ -63,7 +63,7 @@ protected:
 class imageOutput_t : public colorOutput_t
 {
 	public:
-		imageOutput_t(imageHandler_t *handle, const std::string &name);
+		imageOutput_t(imageHandler_t *handle, const std::string &name, int bx, int by);
 		imageOutput_t(); //!< Dummy initializer
 		virtual ~imageOutput_t();
 		virtual bool putPixel(int x, int y, const float *c, bool alpha = true, bool depth = false, float z = 0.f);

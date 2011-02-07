@@ -93,9 +93,24 @@ class YAFRAYCORE_EXPORT color_t
 		}
 
 		void black() { R=G=B=0; }
-		CFLOAT minimum() const { return std::min(R, std::min(G, B)); }
-		CFLOAT maximum() const { return std::max(R, std::max(G, B)); }
-		CFLOAT absmax() const { return std::max(std::fabs(R), std::max(std::fabs(G), std::fabs(B))); }
+		
+		CFLOAT minimum() const
+		{ 
+			using namespace std;
+			return min(R, min(G, B)); 
+		}
+		
+		CFLOAT maximum() const 
+		{ 
+			using namespace std;
+			return max(R, max(G, B));}
+		
+		CFLOAT absmax() const 
+		{ 
+			using namespace std;
+			return max(fabs(R), max(std::fabs(G), fabs(B))); 
+		}
+		
 		void clampRGB0()
 		{
 			if (R<0.0) R=0.0;

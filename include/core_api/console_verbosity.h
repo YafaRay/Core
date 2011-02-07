@@ -62,7 +62,8 @@ public:
 
 	void setMasterVerbosity(int vlevel)
 	{
-		mMasterVerbLevel = std::max( (int)VL_MUTE , std::min( vlevel, (int)VL_INFO ) );
+		using namespace std;
+		mMasterVerbLevel = max( (int)VL_MUTE , min( vlevel, (int)VL_INFO ) );
 	}
 
 	template <typename T>
