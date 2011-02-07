@@ -85,7 +85,7 @@ public:
 	}
 };
 
-extern OutputLevel yafout;
+extern YAFRAYCORE_EXPORT OutputLevel yafout;
 
 __END_YAFRAY
 
