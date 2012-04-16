@@ -125,7 +125,7 @@ bool meshLight_t::illumSample(const surfacePoint_t &sp, lSample_t &s, ray_t &wi)
 	
 	s.col = color;
 	// pdf = distance^2 / area * cos(norm, ldir);
-	s.pdf = dist_sqr*M_PI / (area * cos_angle);
+	s.pdf = dist_sqr*M_PI / ((area * cos_angle == 0.f)?1e-8f:(area * cos_angle));
 	s.flags = flags;
 	if(s.sp)
 	{
