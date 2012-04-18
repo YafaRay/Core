@@ -1,14 +1,13 @@
- //Quesions:  1.  Now just want to use visual importance to speed the render
-
-
 #include <integrators/sppm.h>
 #include <yafraycore/scr_halton.h>
 #include <sstream>
 #include <cmath>
 #include <algorithm>
+
 __BEGIN_YAFRAY
 
 const int nMaxGather = 1000; //used to gather all the photon in the radius. seems could get a better way to do that
+
 SPPM::SPPM(unsigned int dPhotons, int _passnum, bool transpShad, int shadowDepth)
 {
 	type = SURFACE;
@@ -44,9 +43,11 @@ bool SPPM::preprocess()
 {
 	return true;
 }
+
 bool SPPM::render(yafaray::imageFilm_t *image)
 {
 	std::stringstream passString;
+	std::stringstream SettingsSPPM;
 	imageFilm = image;
 
 	passString << "Rendering pass 1 of " << std::max(1, passNum) << "...";
@@ -69,17 +70,24 @@ bool SPPM::render(yafaray::imageFilm_t *image)
 	PM_IRE = false;
 
 	int hpNum = camera->resX() * camera->resY();
+	int passInfo = 1;
 	for(int i=1; i<passNum; ++i) //progress pass, the offset start from 1 as it is 0 based.
 	{
 		if(scene->getSignals() & Y_SIG_ABORT) break;
+		passInfo = i+1;
 		imageFilm->nextPass(false, integratorName);
 		nRefined = 0;
 		renderPass(1, 1 + (i-1)*1, false); // offset are only related to the passNum, since we alway have only one sample.
-		Y_INFO<<  integratorName <<": This pass refined "<<nRefined<<" of "<<hpNum<<" pixels."<<"\n";
+		Y_INFO <<  integratorName << ": This pass refined " << nRefined << " of " << hpNum << " pixels." << yendl;
 	}
 	maxDepth = 0.f;
 	gTimer.stop("rendert");
-	Y_INFO << integratorName << ": Overall rendertime: "<< gTimer.getTime("rendert")<<"s\n";
+	Y_INFO << integratorName << ": Overall rendertime: "<< gTimer.getTime("rendert") << "s." << yendl;
+
+	// Integrator Settings for "drawRenderSettings()" in imageFilm, SPPM has own render method, so "getSettings()" 
+	// in integrator.h has no effect and Integrator settings won't be printed to the parameter badge.
+	SettingsSPPM << integratorName << " (" << settings << "; Passes rendered: " << passInfo << ")";
+	imageFilm->setIntegParams(SettingsSPPM.str());
 	return true;
 }
 
@@ -200,7 +208,7 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 	gTimer.addEvent("prePass");
 	gTimer.start("prePass");
 
-	Y_INFO << integratorName << ": Starting Photon tracing pass...\n";
+	Y_INFO << integratorName << ": Starting Photon tracing pass..." << yendl;
 
 	if(trShad)
 	{
@@ -221,7 +229,6 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 	
 	ray_t ray;
 	float lightNumPdf, lightPdf, s1, s2, s3, s4, s5, s6, s7, sL;
-//	int numCLights = 0;
 	int numDLights = 0;
 	float fNumLights = 0.f;
 	float *energies = NULL;
@@ -229,7 +236,7 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 
 	tmplights.clear();
 
-	for(int i=0;i<(int)lights.size();++i)
+	for(int i=0; i<(int)lights.size(); ++i)
 	{
 		numDLights++;
 		tmplights.push_back(lights[i]);
@@ -238,19 +245,20 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 	fNumLights = (float)numDLights;
 	energies = new float[numDLights];
 
-	for(int i=0;i<numDLights;++i) energies[i] = tmplights[i]->totalEnergy().energy();
+	for (int i=0; i<numDLights; ++i) energies[i] = tmplights[i]->totalEnergy().energy();
 
 	lightPowerD = new pdf1D_t(energies, numDLights);
-	
-	Y_INFO << integratorName << ": Light(s) photon color testing for photon map:\n";
+
+	Y_INFO << integratorName << ": Light(s) photon color testing for photon map:" << yendl;
+
 	for(int i=0;i<numDLights;++i)
 	{
 		pcol = tmplights[i]->emitPhoton(.5, .5, .5, .5, ray, lightPdf); 
 		lightNumPdf = lightPowerD->func[i] * lightPowerD->invIntegral;
-		pcol *= fNumLights*lightPdf/lightNumPdf; //remember that lightPdf is the inverse of the pdf, hence *=...
-		Y_INFO << integratorName << ": Light ["<<i+1<<"] Photon col:"<<pcol<<" | lnpdf: "<<lightNumPdf<<"\n";
+		pcol *= fNumLights * lightPdf / lightNumPdf; //remember that lightPdf is the inverse of the pdf, hence *=...
+		Y_INFO << integratorName << ": Light [" << i+1 << "] Photon col:" << pcol << " | lnpdf: " << lightNumPdf << yendl;
 	}
-	
+
 	delete[] energies;
 	
 	//shoot photons
@@ -268,8 +276,8 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 	if(intpb) pb = intpb;
 	else pb = new ConsoleProgressBar_t(80);
 	
-	if(bHashgrid) Y_INFO << integratorName << ": Building photon hashgrid...\n";
-	else Y_INFO << integratorName << ": Building photon map...\n";
+	if(bHashgrid) Y_INFO << integratorName << ": Building photon hashgrid..." << yendl;
+	else Y_INFO << integratorName << ": Building photon map..." << yendl;
 	
 	pb->init(128);
 	pbStep = std::max(1U, nPhotons/128);
@@ -364,7 +372,7 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 			}
 			
 			// need to break in the middle otherwise we scatter the photon and then discard it => redundant
-			if(nBounces == maxBounces)break;  
+			if(nBounces == maxBounces) break;  
 
 			// scatter photon
 			s5 = ourRandom(); // now should use this to see correctness
@@ -396,19 +404,19 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 	}
 	pb->done();
 	//pb->setTag("Photon map built.");
-	Y_INFO << integratorName << ":Photon map built.\n";
-	Y_INFO << integratorName << ": Shot "<<curr<<" photons from " << numDLights << " light(s)\n";
+	Y_INFO << integratorName << ":Photon map built." << yendl;
+	Y_INFO << integratorName << ": Shot " << curr << " photons from " << numDLights << " light(s)" << yendl;
 	delete lightPowerD;
 
 	totalnPhotons +=  nPhotons;	// accumulate the total photon number, not using nPath for the case of hashgrid.
 
-	Y_INFO << integratorName << ": Stored photons: "<<diffuseMap.nPhotons() + causticMap.nPhotons()<<"\n";
+	Y_INFO << integratorName << ": Stored photons: "<< diffuseMap.nPhotons() + causticMap.nPhotons() << yendl;
 	
 	if(bHashgrid)
 	{
-		Y_INFO << integratorName << ": Building photons hashgrid:\n";
+		Y_INFO << integratorName << ": Building photons hashgrid:" << yendl;
 		photonGrid.updateGrid();
-		Y_INFO << integratorName << ": Done.\n";
+		Y_INFO << integratorName << ": Done." << yendl;
 	}
 	else
 	{
@@ -416,7 +424,7 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 		{
 			Y_INFO << integratorName << ": Building diffuse photons kd-tree:" << yendl;
 			diffuseMap.updateTree();
-			Y_INFO << integratorName << ": Done.\n";
+			Y_INFO << integratorName << ": Done." << yendl;
 		}
 		if(causticMap.nPhotons() > 0)
 		{
@@ -424,7 +432,11 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 			causticMap.updateTree();
 			Y_INFO << integratorName << ": Done." << yendl;
 		}
-		if(diffuseMap.nPhotons() < 50) { Y_ERROR << integratorName << ": Too few photons, stopping now.\n"; return; }
+		if(diffuseMap.nPhotons() < 50)
+		{ 
+			Y_ERROR << integratorName << ": Too few photons, stopping now." << yendl; 
+			return;
+		}
 	}
 
 	tmplights.clear();
@@ -434,9 +446,9 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 	gTimer.stop("prePass");
 
 	if(bHashgrid)
-		Y_INFO << integratorName << ": PhotonGrid building time: " << gTimer.getTime("prePass") << "\n";
+		Y_INFO << integratorName << ": PhotonGrid building time: " << gTimer.getTime("prePass") << yendl;
 	else
-		Y_INFO << integratorName << ": PhotonMap building time: " << gTimer.getTime("prePass") << "\n";
+		Y_INFO << integratorName << ": PhotonMap building time: " << gTimer.getTime("prePass") << yendl;
 
 	return;
 }
@@ -563,7 +575,6 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 			{
 				
 				radius2 = hp.radius2; //reset radius2 & nGathered
-				nGathered = 0;
 				nGathered = causticMap.gather(sp.P, gathered, nMaxGather, radius2);
 				if(nGathered > 0)
 				{
