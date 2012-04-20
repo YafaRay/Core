@@ -145,9 +145,9 @@ public:
 
 	virtual void flush()
 	{
-		tile->x0 = bsX;
+		tile->x0 = 0;
 		tile->x1 = resx;
-		tile->y0 = bsY;
+		tile->y0 = 0;
 		tile->y1 = resy;
 
 		PyGILState_STATE gstate;
