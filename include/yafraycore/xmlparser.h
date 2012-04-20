@@ -56,6 +56,8 @@ void startEl_scene(xmlParser_t &p, const char *element, const char **attrs);
 void endEl_scene(xmlParser_t &p, const char *element);
 void startEl_mesh(xmlParser_t &p, const char *element, const char **attrs);
 void endEl_mesh(xmlParser_t &p, const char *element);
+void startEl_instance(xmlParser_t &p, const char *element, const char **attrs);
+void endEl_instance(xmlParser_t &p, const char *element);
 void startEl_parammap(xmlParser_t &p, const char *element, const char **attrs);
 void endEl_parammap(xmlParser_t &p, const char *element);
 void startEl_paramlist(xmlParser_t &p, const char *element, const char **attrs);

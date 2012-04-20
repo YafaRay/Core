@@ -56,6 +56,12 @@
 #define FAST_MATH
 #define FAST_TRIG
 
+/* fast math leads to weird results on gcc 4.5 and up*/
+#if (__GNUC__ == 4) && (__GNUC_MINOR__ > 4)
+#undef FAST_MATH
+#undef FAST_TRIG
+#endif
+
 __BEGIN_YAFRAY
 
 #define M_2PI		6.28318530717958647692

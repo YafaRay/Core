@@ -323,7 +323,7 @@ void startEl_scene(xmlParser_t &parser, const char *element, const char **attrs)
 	else if(el == "mesh")
 	{
 		mesh_dat_t *md = new mesh_dat_t();
-		int vertices=0, triangles=0, type=0;
+		int vertices=0, triangles=0, type=0, id=-1;
 		for(int n=0; attrs[n]; ++n)
 		{
 			std::string name(attrs[n]);
@@ -332,13 +332,15 @@ void startEl_scene(xmlParser_t &parser, const char *element, const char **attrs)
 			else if(name == "vertices") vertices = atoi(attrs[n+1]);
 			else if(name == "faces") triangles = atoi(attrs[n+1]);
 			else if(name == "type")	type = atoi(attrs[n+1]);
+			else if(name == "id" ) id = atoi(attrs[n+1]);
 		}
 		parser.pushState(startEl_mesh, endEl_mesh, md);
 		if(!parser.scene->startGeometry()) Y_ERROR << "XMLParser: Invalid scene state on startGeometry()!" << yendl;
 
-		// Get a new object ID
-		md->ID = parser.scene->getNextFreeID();
-
+		// Get a new object ID if we did not get one
+		if(id == -1) md->ID = parser.scene->getNextFreeID();
+		else md->ID = id;
+		
 		if(!parser.scene->startTriMesh(md->ID, vertices, triangles, md->has_orco, md->has_uv, type))
 		{
 			Y_ERROR << "XMLParser: Invalid scene state on startTriMesh()!" << yendl;
@@ -365,6 +367,17 @@ void startEl_scene(xmlParser_t &parser, const char *element, const char **attrs)
 	{
 		parser.cparams = &parser.render;
 		parser.pushState(startEl_parammap, endEl_render);
+	}
+    else if(el == "instance")
+	{
+		objID_t * base_object_id = new objID_t();
+        *base_object_id = -1;
+		for(int n=0; attrs[n]; n++)
+		{
+			std::string name(attrs[n]);
+			if(name == "base_object_id") *base_object_id = atoi(attrs[n+1]);
+		}
+		parser.pushState(startEl_instance,endEl_instance, base_object_id);	
 	}
 	else Y_WARNING << "XMLParser: Skipping unrecognized scene element" << yendl;
 }
@@ -453,6 +466,45 @@ void endEl_mesh(xmlParser_t &parser, const char *element)
 	}
 }
 
+void startEl_instance(xmlParser_t &parser, const char *element, const char **attrs)
+{
+	std::string el(element);
+	objID_t boi = *(objID_t *)parser.stateData();
+	if(el == "transform")
+	{
+		float m[4][4];
+		for(int n=0; attrs[n]; ++n)
+		{
+			std::string name(attrs[n]);
+			if(name ==  "m00") m[0][0] = atof(attrs[n+1]); 
+			else if(name ==  "m01") m[0][1] = atof(attrs[n+1]); 
+			else if(name ==  "m02") m[0][2] = atof(attrs[n+1]); 
+			else if(name ==  "m03") m[0][3] = atof(attrs[n+1]); 
+			else if(name ==  "m10") m[1][0] = atof(attrs[n+1]); 
+			else if(name ==  "m11") m[1][1] = atof(attrs[n+1]); 
+			else if(name ==  "m12") m[1][2] = atof(attrs[n+1]); 
+			else if(name ==  "m13") m[1][3] = atof(attrs[n+1]); 
+			else if(name ==  "m20") m[2][0] = atof(attrs[n+1]); 
+			else if(name ==  "m21") m[2][1] = atof(attrs[n+1]); 
+			else if(name ==  "m22") m[2][2] = atof(attrs[n+1]); 
+			else if(name ==  "m23") m[2][3] = atof(attrs[n+1]); 
+			else if(name ==  "m30") m[3][0] = atof(attrs[n+1]); 
+			else if(name ==  "m31") m[3][1] = atof(attrs[n+1]); 
+			else if(name ==  "m32") m[3][2] = atof(attrs[n+1]); 
+			else if(name ==  "m33") m[3][3] = atof(attrs[n+1]); 
+		}
+		matrix4x4_t *m4 = new matrix4x4_t(m);
+		parser.scene->addInstance(boi,*m4);
+	}
+}
+
+void endEl_instance(xmlParser_t &parser, const char *element)
+{
+	if(std::string(element) == "instance" )
+	{
+		parser.popState();
+	}
+}
 // read a parameter map; take any tag as parameter name
 // again, exit when end-element is on of the elements that caused to enter state
 // depending on exit element, create appropriate scene element

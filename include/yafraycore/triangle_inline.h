@@ -160,5 +160,5 @@ inline bool triangleInstance_t::intersectsBound(exBound_t &eb) const
 
 inline vector3d_t triangleInstance_t::getNormal() const
 {
-	return vector3d_t(mesh->objToWorld * mBase->normal);
+	return vector3d_t(mBase->normal);
 }

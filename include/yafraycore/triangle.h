@@ -73,7 +73,7 @@ class YAFRAYCORE_EXPORT triangleInstance_t: public triangle_t
 		virtual bool clippingSupport() const { return true; }
 		// return: false:=doesn't overlap bound; true:=valid clip exists
 		virtual bool clipToBound(double bound[2][3], int axis, bound_t &clipped, void *d_old, void *d_new) const;
-		virtual const material_t* getMaterial() const { return material; }	
+		virtual const material_t* getMaterial() const { return mBase->getMaterial(); }	
 		virtual void getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const;
 		virtual float surfaceArea() const;
 		virtual void sample(float s1, float s2, point3d_t &p, vector3d_t &n) const;

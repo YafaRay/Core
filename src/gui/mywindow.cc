@@ -88,6 +88,10 @@ void initGui()
 
 	if(!QApplication::instance())
 	{
+#if defined(__APPLE__) 
+		QApplication::instance()->setAttribute(Qt::AA_MacPluginApplication);
+		QApplication::instance()->setAttribute(Qt::AA_DontUseNativeMenuBar);
+#endif
 		using namespace yafaray;
 		Y_INFO << "Starting Qt graphical interface..." << yendl;
 		app = new QApplication(argc, 0);
