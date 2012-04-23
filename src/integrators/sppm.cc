@@ -73,12 +73,8 @@ bool SPPM::render(yafaray::imageFilm_t *image)
 	int passInfo = 1;
 	for(int i=1; i<passNum; ++i) //progress pass, the offset start from 1 as it is 0 based.
 	{
+		if(scene->getSignals() & Y_SIG_ABORT) break;
 		passInfo = i+1;
-		if(scene->getSignals() & Y_SIG_ABORT) 
-		{
-			--passInfo;
-			break;
-		}
 		imageFilm->nextPass(false, integratorName);
 		nRefined = 0;
 		renderPass(1, 1 + (i-1)*1, false); // offset are only related to the passNum, since we alway have only one sample.
