@@ -39,6 +39,7 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
+#include <unistd.h>
 
 __BEGIN_YAFRAY
 
