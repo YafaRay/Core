@@ -6,3 +6,6 @@ endif(NOT YAF_REVISION)
 configure_file(CMakeConfig/templates/yaf_revision.h.cmake ${CMAKE_BINARY_DIR}/yaf_revision.h)
 configure_file(CMakeConfig/templates/yafray_config.h.cmake ${CMAKE_BINARY_DIR}/yafray_config.h)
 
+include(CheckIncludeFiles)
+check_include_files(unistd.h HAVE_UNISTD_H)
+configure_file(CMakeConfig/templates/yafray_config.h.cmake ${CMAKE_BINARY_DIR}/yafray_config.h)

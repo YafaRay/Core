@@ -14,6 +14,8 @@
 #define Y_LOG yafout.error() << setColor(Cyan) << "LOG: " << setColor()
 #define yendl std::endl
 
+#cmakedefine HAVE_UNISTD_H 1
+
 __BEGIN_YAFRAY
 typedef float CFLOAT;
 typedef float GFLOAT;
