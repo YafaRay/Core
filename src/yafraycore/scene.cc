@@ -39,7 +39,9 @@
 #include <iostream>
 #include <limits>
 #include <sstream>
-#include <unistd.h>
+#if HAVE_UNISTD_H
+	#include <unistd.h>
+#endif
 
 __BEGIN_YAFRAY
 
