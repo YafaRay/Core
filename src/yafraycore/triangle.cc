@@ -15,28 +15,28 @@ inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, int
 	
 	if(mesh->is_smooth || mesh->normals_exported)
 	{
-        // assume the smoothed normals exist, if the mesh is smoothed; if they don't, fix this
-        // assert(na > 0 && nb > 0 && nc > 0);
+		// assume the smoothed normals exist, if the mesh is smoothed; if they don't, fix this
+		// assert(na > 0 && nb > 0 && nc > 0);
 
-        vector3d_t va = (na > 0) ? mesh->getVertexNormal(na) : sp.Ng;
-        vector3d_t vb = (nb > 0) ? mesh->getVertexNormal(nb) : sp.Ng;
-        vector3d_t vc = (nc > 0) ? mesh->getVertexNormal(nc) : sp.Ng;
+		vector3d_t va = (na > 0) ? mesh->getVertexNormal(na) : sp.Ng;
+		vector3d_t vb = (nb > 0) ? mesh->getVertexNormal(nb) : sp.Ng;
+		vector3d_t vc = (nc > 0) ? mesh->getVertexNormal(nc) : sp.Ng;
 
-        sp.N = u*va + v*vb + w*vc;
+		sp.N = u*va + v*vb + w*vc;
 		sp.N.normalize();
 	}
 	else sp.N = sp.Ng;
 	
 	if(mesh->has_orco)
 	{
-        // if the object is an instance, the vertex positions are the orcos
-        point3d_t const& p0 = mesh->getVertex(pa + 1);
-        point3d_t const& p1 = mesh->getVertex(pb + 1);
-        point3d_t const& p2 = mesh->getVertex(pc + 1);
+		// if the object is an instance, the vertex positions are the orcos
+		point3d_t const& p0 = mesh->getVertex(pa + 1);
+		point3d_t const& p1 = mesh->getVertex(pb + 1);
+		point3d_t const& p2 = mesh->getVertex(pc + 1);
 
-        sp.orcoP = u * p0 + v * p1 + w * p2;
+		sp.orcoP = u * p0 + v * p1 + w * p2;
 
-        sp.orcoNg = ((p1 - p0) ^ (p2 - p0)).normalize();
+		sp.orcoNg = ((p1 - p0) ^ (p2 - p0)).normalize();
 		sp.hasOrco = true;
 	}
 	else
@@ -46,9 +46,9 @@ inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, int
 		sp.orcoNg = sp.Ng;
 	}
 
-    point3d_t const& p0 = mesh->getVertex(pa);
-    point3d_t const& p1 = mesh->getVertex(pb);
-    point3d_t const& p2 = mesh->getVertex(pc);
+	point3d_t const& p0 = mesh->getVertex(pa);
+	point3d_t const& p1 = mesh->getVertex(pb);
+	point3d_t const& p2 = mesh->getVertex(pc);
 	
 	if(mesh->has_uv)
 	{
@@ -71,22 +71,22 @@ inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, int
 		if(std::fabs(det) > 1e-30f)
 		{
 			invdet = 1.f/det;
-            vector3d_t dp1 = p0 - p2;
-            vector3d_t dp2 = p1 - p2;
+			vector3d_t dp1 = p0 - p2;
+			vector3d_t dp2 = p1 - p2;
 			sp.dPdU = (dv2 * dp1 - dv1 * dp2) * invdet;
 			sp.dPdV = (du1 * dp2 - du2 * dp1) * invdet;
 		}
 		else
 		{
-            sp.dPdU = p0 - p2;
-            sp.dPdV = p1 - p2;
-        }
+			sp.dPdU = p0 - p2;
+			sp.dPdV = p1 - p2;
+		}
 	}
 	else
 	{
 		// implicit mapping, p1 = 0/0, p2 = 1/0, p3 = 0/1 => U = u, V = v; (arbitrary choice)
 		sp.dPdU = p0 - p2;
-        sp.dPdV = p1 - p2;
+		sp.dPdV = p1 - p2;
 	}
 
 	sp.dPdU.normalize();
@@ -98,12 +98,12 @@ inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, int
 	sp.P = hit;
 	createCS(sp.N, sp.NU, sp.NV);
 	// transform dPdU and dPdV in shading space
-    sp.dSdU.x = sp.NU * sp.dPdU;
-    sp.dSdU.y = sp.NV * sp.dPdU;
-    sp.dSdU.z = sp.N * sp.dPdU;
-    sp.dSdV.x = sp.NU * sp.dPdV;
-    sp.dSdV.y = sp.NV * sp.dPdV;
-    sp.dSdV.z = sp.N * sp.dPdV;
+	sp.dSdU.x = sp.NU * sp.dPdU;
+	sp.dSdU.y = sp.NV * sp.dPdU;
+	sp.dSdU.z = sp.N * sp.dPdU;
+	sp.dSdV.x = sp.NU * sp.dPdV;
+	sp.dSdV.y = sp.NV * sp.dPdV;
+	sp.dSdV.z = sp.N * sp.dPdV;
 	sp.light = mesh->light;
 }
 
@@ -125,9 +125,9 @@ inline bool triangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipp
 		
 		double tPoints[3][3];
 
-        point3d_t const& a = mesh->getVertex(pa);
-        point3d_t const& b = mesh->getVertex(pb);
-        point3d_t const& c = mesh->getVertex(pc);
+		point3d_t const& a = mesh->getVertex(pa);
+		point3d_t const& b = mesh->getVertex(pb);
+		point3d_t const& c = mesh->getVertex(pc);
 
 		for(int i=0; i<3; ++i)
 		{
@@ -143,9 +143,9 @@ inline bool triangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipp
 	
 inline float triangle_t::surfaceArea() const
 {
-    point3d_t const& a = mesh->getVertex(pa);
-    point3d_t const& b = mesh->getVertex(pb);
-    point3d_t const& c = mesh->getVertex(pc);
+	point3d_t const& a = mesh->getVertex(pa);
+	point3d_t const& b = mesh->getVertex(pb);
+	point3d_t const& c = mesh->getVertex(pc);
 
 	vector3d_t edge1, edge2;
 	edge1 = b - a;
@@ -155,9 +155,9 @@ inline float triangle_t::surfaceArea() const
 
 inline void triangle_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) const
 {
-    point3d_t const& a = mesh->getVertex(pa);
-    point3d_t const& b = mesh->getVertex(pb);
-    point3d_t const& c = mesh->getVertex(pc);
+	point3d_t const& a = mesh->getVertex(pa);
+	point3d_t const& b = mesh->getVertex(pb);
+	point3d_t const& c = mesh->getVertex(pc);
 
 	float su1 = fSqrt(s1);
 	float u = 1.f - su1;
@@ -171,43 +171,43 @@ inline void triangle_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) 
 inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
 {
 	sp.Ng = getNormal();
-    int pa = mBase->pa;
-    int pb = mBase->pa;
-    int pc = mBase->pa;
-    int na = mBase->na;
-    int nb = mBase->nb;
-    int nc = mBase->nc;
+	int pa = mBase->pa;
+	int pb = mBase->pb;
+	int pc = mBase->pc;
+	int na = mBase->na;
+	int nb = mBase->nb;
+	int nc = mBase->nc;
 
 	data.calcB0();
 
-    size_t selfIndex = mBase->selfIndex;
+	size_t selfIndex = mBase->selfIndex;
 
 	float u = data.b0, v = data.b1, w = data.b2;
 	
 	if(mesh->is_smooth || mesh->normals_exported)
 	{
-        // assume the smoothed normals exist, if the mesh is smoothed; if they don't, fix this
-        // assert(na > 0 && nb > 0 && nc > 0);
+		// assume the smoothed normals exist, if the mesh is smoothed; if they don't, fix this
+		// assert(na > 0 && nb > 0 && nc > 0);
 
-        vector3d_t va = (na > 0) ? mesh->getVertexNormal(na) : sp.Ng;
-        vector3d_t vb = (nb > 0) ? mesh->getVertexNormal(nb) : sp.Ng;
-        vector3d_t vc = (nc > 0) ? mesh->getVertexNormal(nc) : sp.Ng;
+		vector3d_t va = (na > 0) ? mesh->getVertexNormal(na) : sp.Ng;
+		vector3d_t vb = (nb > 0) ? mesh->getVertexNormal(nb) : sp.Ng;
+		vector3d_t vc = (nc > 0) ? mesh->getVertexNormal(nc) : sp.Ng;
 
-        sp.N = u*va + v*vb + w*vc;
+		sp.N = u*va + v*vb + w*vc;
 		sp.N.normalize();
 	}
 	else sp.N = sp.Ng;
 	
 	if(mesh->has_orco)
 	{
-        // if the object is an instance, the vertex positions are the orcos
-        point3d_t const& p0 = mesh->getVertex(pa + 1);
-        point3d_t const& p1 = mesh->getVertex(pb + 1);
-        point3d_t const& p2 = mesh->getVertex(pc + 1);
+		// if the object is an instance, the vertex positions are the orcos
+		point3d_t const& p0 = mBase->mesh->getVertex(pa + 1);
+		point3d_t const& p1 = mBase->mesh->getVertex(pb + 1);
+		point3d_t const& p2 = mBase->mesh->getVertex(pc + 1);
 
-        sp.orcoP = u * p0 + v * p1 + w * p2;
+		sp.orcoP = u * p0 + v * p1 + w * p2;
 
-        sp.orcoNg = ((p1 - p0) ^ (p2 - p0)).normalize();
+		sp.orcoNg = ((p1 - p0) ^ (p2 - p0)).normalize();
 		sp.hasOrco = true;
 	}
 	else
@@ -217,9 +217,9 @@ inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &
 		sp.orcoNg = sp.Ng;
 	}
 
-    point3d_t const& p0 = mesh->getVertex(pa);
-    point3d_t const& p1 = mesh->getVertex(pb);
-    point3d_t const& p2 = mesh->getVertex(pc);
+	point3d_t const& p0 = mesh->getVertex(pa);
+	point3d_t const& p1 = mesh->getVertex(pb);
+	point3d_t const& p2 = mesh->getVertex(pc);
 	
 	if(mesh->has_uv)
 	{
@@ -242,23 +242,23 @@ inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &
 		if(std::fabs(det) > 1e-30f)
 		{
 			invdet = 1.f/det;
-            vector3d_t dp1 = p0 - p2;
-            vector3d_t dp2 = p1 - p2;
+			vector3d_t dp1 = p0 - p2;
+			vector3d_t dp2 = p1 - p2;
 			sp.dPdU = (dv2 * dp1 - dv1 * dp2) * invdet;
 			sp.dPdV = (du1 * dp2 - du2 * dp1) * invdet;
 		}
 		else
 		{
-            vector3d_t dp1 = p0 - p2;
-            vector3d_t dp2 = p1 - p2;
+			vector3d_t dp1 = p0 - p2;
+			vector3d_t dp2 = p1 - p2;
 			createCS((dp2 ^ dp1).normalize(), sp.dPdU, sp.dPdV);
 		}
 	}
 	else
 	{
 		// implicit mapping, p1 = 0/0, p2 = 1/0, p3 = 0/1 => U = u, V = v; (arbitrary choice)
-        vector3d_t dp1 = p0 - p2;
-        vector3d_t dp2 = p1 - p2;
+		vector3d_t dp1 = p0 - p2;
+		vector3d_t dp2 = p1 - p2;
 		sp.U = v + w;
 		sp.V = w;
 		sp.dPdU = dp2 - dp1;
@@ -337,9 +337,9 @@ inline bool triangleInstance_t::clipToBound(double bound[2][3], int axis, bound_
 	
 inline float triangleInstance_t::surfaceArea() const
 {
-    point3d_t const& a = mesh->getVertex(mBase->pa);
-    point3d_t const& b = mesh->getVertex(mBase->pb);
-    point3d_t const& c = mesh->getVertex(mBase->pc);
+	point3d_t const& a = mesh->getVertex(mBase->pa);
+	point3d_t const& b = mesh->getVertex(mBase->pb);
+	point3d_t const& c = mesh->getVertex(mBase->pc);
 
 	vector3d_t edge1, edge2;
 	edge1 = b - a;
@@ -349,9 +349,9 @@ inline float triangleInstance_t::surfaceArea() const
 
 inline void triangleInstance_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) const
 {
-    point3d_t const& a = mesh->getVertex(mBase->pa);
-    point3d_t const& b = mesh->getVertex(mBase->pb);
-    point3d_t const& c = mesh->getVertex(mBase->pc);
+	point3d_t const& a = mesh->getVertex(mBase->pa);
+	point3d_t const& b = mesh->getVertex(mBase->pb);
+	point3d_t const& c = mesh->getVertex(mBase->pc);
 
 	float su1 = fSqrt(s1);
 	float u = 1.f - su1;
