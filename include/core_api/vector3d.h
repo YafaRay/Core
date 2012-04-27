@@ -92,7 +92,6 @@ class YAFRAYCORE_EXPORT vector3d_t
 		vector3d_t& operator *=(PFLOAT s) { x*=s;  y*=s;  z*=s;  return *this;}
 		PFLOAT operator[] (int i) const{ return (&x)[i]; } //Lynx
 		void abs() { x=std::fabs(x);  y=std::fabs(y);  z=std::fabs(z); }
-		~vector3d_t() {};
 		PFLOAT x,y,z;
 };
 
@@ -122,7 +121,6 @@ class YAFRAYCORE_EXPORT point3d_t
 		point3d_t& operator -=(const point3d_t &s) { x-=s.x;  y-=s.y;  z-=s.z;  return *this;}
 		PFLOAT operator[] (int i) const{ return (&x)[i]; } //Lynx
 		PFLOAT &operator[](int i) { return (&x)[i]; } //Lynx
-		~point3d_t() {};
 		PFLOAT x,y,z;
 };
 
@@ -274,7 +272,9 @@ YAFRAYCORE_EXPORT void fast_fresnel(const vector3d_t & I, const vector3d_t & n, 
 
 inline void createCS(const vector3d_t &N, vector3d_t &u, vector3d_t &v)
 {
-	if ((N.x==0) && (N.y==0))
+  // Changed by Axel (ernest) 
+  // because we take the square later an underflow could happen leading to divide by zero and white dots
+  if ((fabs(N.x) < 1.E-12f) && (fabs(N.y) < 1.E-12f))
 	{
 		if (N.z<0)
 			u.set(-1, 0, 0);
@@ -286,6 +286,7 @@ inline void createCS(const vector3d_t &N, vector3d_t &u, vector3d_t &v)
 	{
 		// Note: The root cannot become zero if
 		// N.x==0 && N.y==0.
+    // this is not the whole story
 		const PFLOAT d = 1.0/fSqrt(N.y*N.y + N.x*N.x);
 		u.set(N.y*d, -N.x*d, 0);
 		v = N^u;
