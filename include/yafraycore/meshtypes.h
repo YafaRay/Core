@@ -83,7 +83,7 @@ class YAFRAYCORE_EXPORT triangleObject_t: public object3d_t
             return vector3d_t(normals[index]);
         }
 
-        inline virtual point3d_t getVertex(int index) const
+        inline virtual const point3d_t& getVertex(int index) const
         {
             return points[index];
         }
