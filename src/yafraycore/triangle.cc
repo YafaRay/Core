@@ -6,7 +6,7 @@ __BEGIN_YAFRAY
 int triBoxClip(const double b_min[3], const double b_max[3], const double triverts[3][3], bound_t &box, void* n_dat);
 int triPlaneClip(double pos, int axis, bool lower, bound_t &box, void* o_dat, void* n_dat);
 
-inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
+void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
 {
 	sp.Ng = getNormal();
 	data.calcB0();
@@ -107,7 +107,7 @@ inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, int
 	sp.light = mesh->light;
 }
 
-inline bool triangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipped, void *d_old, void *d_new) const
+bool triangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipped, void *d_old, void *d_new) const
 {
 	if(axis>=0) // re-clip
 	{
@@ -141,7 +141,7 @@ inline bool triangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipp
 	return true;
 }
 	
-inline float triangle_t::surfaceArea() const
+float triangle_t::surfaceArea() const
 {
 	point3d_t const& a = mesh->getVertex(pa);
 	point3d_t const& b = mesh->getVertex(pb);
@@ -153,7 +153,7 @@ inline float triangle_t::surfaceArea() const
 	return 0.5 * (edge1 ^ edge2).length();
 }
 
-inline void triangle_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) const
+void triangle_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) const
 {
 	point3d_t const& a = mesh->getVertex(pa);
 	point3d_t const& b = mesh->getVertex(pb);
@@ -168,7 +168,7 @@ inline void triangle_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) 
 
 // triangleInstance_t Methods
 
-inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
+void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
 {
 	sp.Ng = getNormal();
 	int pa = mBase->pa;
@@ -287,7 +287,7 @@ inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &
 	sp.light = mesh->mBase->light;
 }
 
-inline bool triangleInstance_t::clipToBound(double bound[2][3], int axis, bound_t &clipped, void *d_old, void *d_new) const
+bool triangleInstance_t::clipToBound(double bound[2][3], int axis, bound_t &clipped, void *d_old, void *d_new) const
 {
 	if(axis>=0) // re-clip
 	{
@@ -335,7 +335,7 @@ inline bool triangleInstance_t::clipToBound(double bound[2][3], int axis, bound_
 	return true;
 }
 	
-inline float triangleInstance_t::surfaceArea() const
+float triangleInstance_t::surfaceArea() const
 {
 	point3d_t const& a = mesh->getVertex(mBase->pa);
 	point3d_t const& b = mesh->getVertex(mBase->pb);
@@ -347,7 +347,7 @@ inline float triangleInstance_t::surfaceArea() const
 	return 0.5 * (edge1 ^ edge2).length();
 }
 
-inline void triangleInstance_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) const
+void triangleInstance_t::sample(float s1, float s2, point3d_t &p, vector3d_t &n) const
 {
 	point3d_t const& a = mesh->getVertex(mBase->pa);
 	point3d_t const& b = mesh->getVertex(mBase->pb);
