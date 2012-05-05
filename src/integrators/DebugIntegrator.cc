@@ -49,6 +49,7 @@ class YAFRAYPLUGIN_EXPORT DebugIntegrator : public tiledIntegrator_t
 DebugIntegrator::DebugIntegrator(SurfaceProperties dt)
 {
 	type = SURFACE;
+	intpb = 0;
 	debugType = dt;
 	integratorName = "DebugIntegrator";
 	integratorShortName = "DBG";
