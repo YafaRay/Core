@@ -295,5 +295,16 @@ set(EMBED_FONT_QT OFF)
 
 #set(YAF_SHADOW_BIAS 0.0005)
 
+############################## Blender Add-On ##################################
+# Options for building YafaRay as a self-contained add-on for Blender          #
+#
+
+#set(BLENDER_ADDON OFF)
+
+# Set the branch to use when building the add-on. If you use Blender v2.62,    #
+# uncomment the next line and change from "master" to "blender-2.62"           #
+
+#set(BLENDER_EXPORTER_BRANCH "master")
+
 ################################# End of file ##################################
 

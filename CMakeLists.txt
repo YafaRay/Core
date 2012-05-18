@@ -33,6 +33,10 @@ if(NOT YAF_USER_CONFIG)
 	include(${CMAKE_SOURCE_DIR}/UserConfig.txt OPTIONAL)
 endif(NOT YAF_USER_CONFIG)
 
+# Load the packaging config
+include(CMakeConfig/CPackConfig.txt)
+
+
 if(NOT YAF_MIN_RAY_DIST)
 	set(YAF_MIN_RAY_DIST 0.00005)
 endif(NOT YAF_MIN_RAY_DIST)
@@ -296,3 +300,4 @@ add_subdirectory(src)
 
 include(CMakeConfig/GenConfHeaders.txt)
 
+include(CPack)

@@ -1,0 +1,23 @@
+option(BLENDER_ADDON "Build YafaRay as a self-contained blender add on" OFF)
+if (BLENDER_ADDON)
+    set(YAF_BIN_DIR .)
+    set(YAF_LIB_DIR bin)
+    set(YAF_PLUGIN_DIR ${YAF_LIB_DIR}/plugins)
+    set(YAF_BINDINGS_PY_DIR bin)
+
+    if (NOT BLENDER_EXPORTER_BRANCH)
+        set(BLENDER_EXPORTER_BRANCH "master")
+    endif (NOT BLENDER_EXPORTER_BRANCH)
+
+    add_custom_target(blender_export ALL rm -rf blender_exporter
+        COMMAND git clone -b ${BLENDER_EXPORTER_BRANCH} git://github.com/YafaRay/Blender-2.5-Exporter blender_exporter
+        COMMAND rm -rf blender_exporter/.git
+        WORKING_DIRECTORY ${CMAKE_SOURCE_DIR})
+
+    install(DIRECTORY blender_exporter/ DESTINATION .)
+
+    set(CPACK_GENERATOR "ZIP")
+    set(CPACK_PACKAGE_INSTALL_DIRECTORY "yafaray")
+    set(CPACK_PACKAGE_FILE_NAME "yafaray")
+endif (BLENDER_ADDON)
+
