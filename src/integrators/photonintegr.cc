@@ -114,7 +114,6 @@ photonIntegrator_t::photonIntegrator_t(unsigned int dPhotons, unsigned int cPhot
 	causRadius = cRad;
 	rDepth = 6;
 	maxBounces = 5;
-	intpb = 0;
 	integratorName = "PhotonMap";
 	integratorShortName = "PM";
 }

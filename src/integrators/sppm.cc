@@ -11,7 +11,6 @@ const int nMaxGather = 1000; //used to gather all the photon in the radius. seem
 SPPM::SPPM(unsigned int dPhotons, int _passnum, bool transpShad, int shadowDepth)
 {
 	type = SURFACE;
-	intpb = 0;
 	integratorName = "SPPM";
 	integratorShortName = "SPPM";
 	nPhotons = dPhotons;

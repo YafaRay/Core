@@ -49,7 +49,6 @@ directLighting_t::directLighting_t(bool transpShad, int shadowDepth, int rayDept
 	usePhotonCaustics = false;
 	sDepth = shadowDepth;
 	rDepth = rayDepth;
-	intpb = 0;
 	integratorName = "DirectLight";
 	integratorShortName = "DL";
 }
