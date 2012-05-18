@@ -54,6 +54,7 @@ class YAFRAYPLUGIN_EXPORT pathIntegrator_t: public mcIntegrator_t
 pathIntegrator_t::pathIntegrator_t(bool transpShad, int shadowDepth)
 {
 	type = SURFACE;
+	intpb = 0;
 	trShad = transpShad;
 	sDepth = shadowDepth;
 	causticType = PATH;
