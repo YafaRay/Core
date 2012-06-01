@@ -402,7 +402,7 @@ material_t* glossyMat_t::factory(paraMap_t &params, std::list< paraMap_t > &para
 	
 	if(mat->loadNodes(paramList, render))
 	{
-		for(actNode = nodeList.begin(); actNode != nodeList.end(); actNode++)
+		for(actNode = nodeList.begin(); actNode != nodeList.end(); ++actNode)
 		{
 			if(params.getParam(actNode->first, name))
 			{
