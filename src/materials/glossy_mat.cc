@@ -254,7 +254,7 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 			cos_wo_H = wo*H;
 			if ( cos_wo_H < 0.f )
 			{
-				H = reflect_plane(N, H);
+				H.reflect(N);
 				cos_wo_H = wo*H;
 			}
 			// Compute incident direction by reflecting wo about H
@@ -275,7 +275,7 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 			cos_wo_H = wo*H;
 			if ( cos_wo_H < 0.f )
 			{
-				H = reflect_plane(N, H);
+				H.reflect(N);
 				cos_wo_H = wo*H;
 			}
 			// Compute incident direction by reflecting wo about H

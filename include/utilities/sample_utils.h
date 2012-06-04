@@ -137,12 +137,6 @@ void inline minRot(const vector3d_t &D, const vector3d_t &U,
 	V2 = D2^U2;
 }
 
-inline vector3d_t reflect_plane(const vector3d_t &n,const vector3d_t &v)
-{
-	const PFLOAT vn = v*n;
-	return (2.f*vn)*n - v;
-}
-
 //! Just a "modulo 1" float addition, assumed that both values are in range [0;1]
 
 inline float addMod1(float a, float b)

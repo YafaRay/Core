@@ -384,7 +384,8 @@ void shinyDiffuseMat_t::getSpecular(const renderState_t &state, const surfacePoi
 	reflect=isReflective;
 	if(isReflective)
 	{
-		dir[0] = reflect_plane(N, wo);
+		dir[0] = wo;
+		dir[0].reflect(N);
 		PFLOAT cos_wi_Ng = dir[0]*Ng;
 		if(cos_wi_Ng < 0.01){ dir[0] += (0.01-cos_wi_Ng)*Ng; dir[0].normalize(); }
 		col[0] = (mirColS ? mirColS->getColor(stack) : specRefCol) * (dat->component[0]*Kr);

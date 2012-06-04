@@ -115,7 +115,8 @@ color_t glassMat_t::sample(const renderState_t &state, const surfacePoint_t &sp,
 			}
 			else if( matches(s.flags, BSDF_SPECULAR|BSDF_REFLECT) )
 			{
-				wi = reflect_plane(N, wo);
+				wi = wo;
+				wi.reflect(N);
 				s.pdf = pKr;
 				s.sampledFlags = BSDF_SPECULAR | BSDF_REFLECT;
 				W = 1.f;
@@ -124,7 +125,8 @@ color_t glassMat_t::sample(const renderState_t &state, const surfacePoint_t &sp,
 		}
 		else if( matches(s.flags, BSDF_SPECULAR|BSDF_REFLECT) ) //total inner reflection
 		{
-			wi = reflect_plane(N, wo);
+			wi = wo;
+			wi.reflect(N);
 			s.sampledFlags = BSDF_SPECULAR | BSDF_REFLECT;
 			W = 1.f;
 			return 1.f; //color_t(1.f/std::fabs(sp.N*wi));
@@ -153,7 +155,8 @@ color_t glassMat_t::sample(const renderState_t &state, const surfacePoint_t &sp,
 			}
 			else if( matches(s.flags, BSDF_SPECULAR|BSDF_REFLECT) ) //total inner reflection
 			{
-				wi = reflect_plane(N, wo);
+				wi = wo;
+				wi.reflect(N);
 				s.pdf = pKr;
 				s.sampledFlags = BSDF_SPECULAR | BSDF_REFLECT;
 				if(s.reverse)
@@ -167,7 +170,8 @@ color_t glassMat_t::sample(const renderState_t &state, const surfacePoint_t &sp,
 		}
 		else if( matches(s.flags, BSDF_SPECULAR|BSDF_REFLECT) )//total inner reflection
 		{
-			wi = reflect_plane(N, wo);
+			wi = wo;
+			wi.reflect(N);
 			s.sampledFlags = BSDF_SPECULAR | BSDF_REFLECT;
 			//color_t tir_col(1.f/std::fabs(sp.N*wi));
 			if(s.reverse)
@@ -231,7 +235,8 @@ void glassMat_t::getSpecular(const renderState_t &state, const surfacePoint_t &s
 		// killer as rays keep bouncing inside objects and contribute little after few bounces, so limit we it:
 		if(outside || state.raylevel < 2)
 		{
-			dir[0] = reflect_plane(N, wo);
+			dir[0] = wo;
+			dir[0].reflect(N);
 			col[0] = (mirColS ? mirColS->getColor(stack) : specRefCol) * Kr;
 			refl = true;
 		}
@@ -240,7 +245,8 @@ void glassMat_t::getSpecular(const renderState_t &state, const surfacePoint_t &s
 	else //total inner reflection
 	{
 		col[0] = color_t(1.f);
-		dir[0] = reflect_plane(N, wo);
+		dir[0] = wo;
+		dir[0].reflect(N);
 		refl = true;
 		refr = false;
 	}

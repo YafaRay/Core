@@ -293,7 +293,7 @@ color_t coatedGlossyMat_t::sample(const renderState_t &state, const surfacePoint
 				cos_wo_H = wo*H;
 				if ( cos_wo_H < 0.f )
 				{
-					H = reflect_plane(N, H);
+					H.reflect(N);
 					cos_wo_H = wo*H;
 				}
 				// Compute incident direction by reflecting wo about H
@@ -405,7 +405,8 @@ void coatedGlossyMat_t::getSpecular(const renderState_t &state, const surfacePoi
 	
 	if(state.raylevel > 5) return;
 	
-	dir[0] = reflect_plane(N, wo);
+	dir[0] = wo;
+	dir[0].reflect(N);
 	col[0] = Kr * mirror_color;
 	float cos_wi_Ng = dir[0]*Ng;
 	if(cos_wi_Ng < 0.01)

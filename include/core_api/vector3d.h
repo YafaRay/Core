@@ -61,6 +61,7 @@ class YAFRAYCORE_EXPORT vector3d_t
 		
 		void set(PFLOAT ix, PFLOAT iy, PFLOAT iz=0) { x=ix;  y=iy;  z=iz; }
 		vector3d_t& normalize();
+		vector3d_t& reflect(const vector3d_t &n);
 		// normalizes and returns length
 		PFLOAT normLen()
 		{
@@ -253,6 +254,21 @@ inline vector3d_t& vector3d_t::normalize()
 	return *this;
 }
 
+/** Reflects the vector into a surface whose normal is \a n
+     \brief Vector reflection
+     \param n Surface normal
+     \warning n must be unit vector!
+     \note Lynn's formula R = 2*(V dot N)*N -V (http://www.3dkingdoms.com/weekly/weekly.php?a=2)
+  */
+inline vector3d_t& vector3d_t::reflect(const vector3d_t &n)
+{
+	const float vn = 2.0f*(x*n.x+y*n.y+z*n.z);
+	x = vn*n.x -x;
+	y = vn*n.y -y;
+	z = vn*n.z -z;
+	return *this;
+}
+
 inline vector3d_t reflect_dir(const vector3d_t &n,const vector3d_t &v)
 {
 	const PFLOAT vn = v*n;
@@ -343,11 +359,6 @@ inline vector3d_t RandomSpherical()
 	}
 	else v.z = 1.0;
 	return v;
-}
-
-inline GFLOAT dot( const normal_t &a,const normal_t &b)
-{
-	return (a.x*b.x+a.y*b.y+a.z*b.z);
 }
 
 YAFRAYCORE_EXPORT vector3d_t randomVectorCone(const vector3d_t &D, const vector3d_t &U, const vector3d_t &V,

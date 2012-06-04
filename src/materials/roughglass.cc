@@ -136,7 +136,8 @@ color_t roughGlassMat_t::sample(const renderState_t &state, const surfacePoint_t
 	}
 	else // TIR
 	{
-		wi = reflect_plane(H, wo);
+		wi = wo;
+		wi.reflect(H);
 		s.sampledFlags = BSDF_GLOSSY | BSDF_REFLECT;
 		ret = 1.f;
 		W = 1.f;
