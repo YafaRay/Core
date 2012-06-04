@@ -53,47 +53,47 @@ class YAFRAYCORE_EXPORT vector3d_t
 {
 	public:
 		vector3d_t() { }
-		vector3d_t(PFLOAT v): x(v), y(v), z(v) {  }
-		vector3d_t(PFLOAT ix, PFLOAT iy, PFLOAT iz=0): x(ix), y(iy), z(iz) { }
+		vector3d_t(float v): x(v), y(v), z(v) {  }
+		vector3d_t(float ix, float iy, float iz=0): x(ix), y(iy), z(iz) { }
 		vector3d_t(const vector3d_t &s): x(s.x), y(s.y), z(s.z) { }
 		explicit vector3d_t(const normal_t &n);
 		explicit vector3d_t(const point3d_t &p);
 		
-		void set(PFLOAT ix, PFLOAT iy, PFLOAT iz=0) { x=ix;  y=iy;  z=iz; }
+		void set(float ix, float iy, float iz=0) { x=ix;  y=iy;  z=iz; }
 		vector3d_t& normalize();
 		// normalizes and returns length
-		PFLOAT normLen()
+		float normLen()
 		{
-			PFLOAT vl = x*x + y*y + z*z;
+			float vl = x*x + y*y + z*z;
 			if (vl!=0.0) {
 				vl = fSqrt(vl);
-				const PFLOAT d = 1.0/vl;
+				const float d = 1.0/vl;
 				x*=d; y*=d; z*=d;
 			}
 			return vl;
 		}
 		// normalizes and returns length squared
-		PFLOAT normLenSqr()
+		float normLenSqr()
 		{
-			PFLOAT vl = x*x + y*y + z*z;
+			float vl = x*x + y*y + z*z;
 			if (vl!=0.0) {
-				const PFLOAT d = 1.0/fSqrt(vl);
+				const float d = 1.0/fSqrt(vl);
 				x*=d; y*=d; z*=d;
 			}
 			return vl;
 		}
-		PFLOAT length() const;
-		PFLOAT lengthSqr() const{ return x*x+y*y+z*z; }
+		float length() const;
+		float lengthSqr() const{ return x*x+y*y+z*z; }
 		bool null()const { return ((x==0) && (y==0) && (z==0)); }
 		vector3d_t& operator = (const vector3d_t &s) { x=s.x;  y=s.y;  z=s.z;  return *this;}
 		vector3d_t& operator +=(const vector3d_t &s) { x+=s.x;  y+=s.y;  z+=s.z;  return *this;}
 		vector3d_t& operator -=(const vector3d_t &s) { x-=s.x;  y-=s.y;  z-=s.z;  return *this;}
-		vector3d_t& operator /=(PFLOAT s) { x/=s;  y/=s;  z/=s;  return *this;}
-		vector3d_t& operator *=(PFLOAT s) { x*=s;  y*=s;  z*=s;  return *this;}
-		PFLOAT operator[] (int i) const{ return (&x)[i]; } //Lynx
+		vector3d_t& operator /=(float s) { x/=s;  y/=s;  z/=s;  return *this;}
+		vector3d_t& operator *=(float s) { x*=s;  y*=s;  z*=s;  return *this;}
+		float operator[] (int i) const{ return (&x)[i]; } //Lynx
 		void abs() { x=std::fabs(x);  y=std::fabs(y);  z=std::fabs(z); }
 		~vector3d_t() {};
-		PFLOAT x,y,z;
+		float x,y,z;
 };
 
 class YAFRAYCORE_EXPORT normal_t
@@ -110,20 +110,20 @@ class YAFRAYCORE_EXPORT point3d_t
 {
 	public:
 		point3d_t() {}
-		point3d_t(PFLOAT ix, PFLOAT iy, PFLOAT iz=0): x(ix),  y(iy),  z(iz) { }
+		point3d_t(float ix, float iy, float iz=0): x(ix),  y(iy),  z(iz) { }
 		point3d_t(const point3d_t &s): x(s.x),  y(s.y),  z(s.z) { }
 		point3d_t(const vector3d_t &v): x(v.x),  y(v.y),  z(v.z) { }
-		void set(PFLOAT ix, PFLOAT iy, PFLOAT iz=0) { x=ix;  y=iy;  z=iz; }
-		PFLOAT length() const;
+		void set(float ix, float iy, float iz=0) { x=ix;  y=iy;  z=iz; }
+		float length() const;
 		point3d_t& operator= (const point3d_t &s) { x=s.x;  y=s.y;  z=s.z;  return *this; }
-		point3d_t& operator *=(PFLOAT s) { x*=s;  y*=s;  z*=s;  return *this;}
-		point3d_t& operator +=(PFLOAT s) { x+=s;  y+=s;  z+=s;  return *this;}
+		point3d_t& operator *=(float s) { x*=s;  y*=s;  z*=s;  return *this;}
+		point3d_t& operator +=(float s) { x+=s;  y+=s;  z+=s;  return *this;}
 		point3d_t& operator +=(const point3d_t &s) { x+=s.x;  y+=s.y;  z+=s.z;  return *this;}
 		point3d_t& operator -=(const point3d_t &s) { x-=s.x;  y-=s.y;  z-=s.z;  return *this;}
-		PFLOAT operator[] (int i) const{ return (&x)[i]; } //Lynx
-		PFLOAT &operator[](int i) { return (&x)[i]; } //Lynx
+		float operator[] (int i) const{ return (&x)[i]; } //Lynx
+		float &operator[](int i) { return (&x)[i]; } //Lynx
 		~point3d_t() {};
-		PFLOAT x,y,z;
+		float x,y,z;
 };
 
 
@@ -137,42 +137,42 @@ inline vector3d_t::vector3d_t(const point3d_t &p): x(p.x), y(p.y), z(p.z) { }
 YAFRAYCORE_EXPORT std::ostream & operator << (std::ostream &out,const vector3d_t &v);
 YAFRAYCORE_EXPORT std::ostream & operator << (std::ostream &out,const point3d_t &p);
 
-inline PFLOAT operator * ( const vector3d_t &a,const vector3d_t &b)
+inline float operator * ( const vector3d_t &a,const vector3d_t &b)
 {
 	return (a.x*b.x+a.y*b.y+a.z*b.z);
 }
 
-inline vector3d_t operator * ( PFLOAT f,const vector3d_t &b)
+inline vector3d_t operator * ( float f,const vector3d_t &b)
 {
 	return vector3d_t(f*b.x,f*b.y,f*b.z);
 }
 
-inline vector3d_t operator * (const vector3d_t &b,PFLOAT f)
+inline vector3d_t operator * (const vector3d_t &b,float f)
 {
 	return vector3d_t(f*b.x,f*b.y,f*b.z);
 }
 
-inline point3d_t operator * (PFLOAT f,const point3d_t &b)
+inline point3d_t operator * (float f,const point3d_t &b)
 {
 	return point3d_t(f*b.x,f*b.y,f*b.z);
 }
 
-inline vector3d_t operator / (const vector3d_t &b,PFLOAT f)
+inline vector3d_t operator / (const vector3d_t &b,float f)
 {
 	return vector3d_t(b.x/f,b.y/f,b.z/f);
 }
 
-inline point3d_t operator / (const point3d_t &b,PFLOAT f)
+inline point3d_t operator / (const point3d_t &b,float f)
 {
 	return point3d_t(b.x/f,b.y/f,b.z/f);
 }
 
-inline point3d_t operator * (const point3d_t &b,PFLOAT f)
+inline point3d_t operator * (const point3d_t &b,float f)
 {
 	return point3d_t(b.x*f,b.y*f,b.z*f);
 }
 
-inline vector3d_t operator / (PFLOAT f,const vector3d_t &b)
+inline vector3d_t operator / (float f,const vector3d_t &b)
 {
 	return vector3d_t(b.x/f,b.y/f,b.z/f);
 }
@@ -230,20 +230,20 @@ inline point3d_t mult(const point3d_t &a, const vector3d_t &b)
 	return point3d_t(a.x * b.x, a.y * b.y, a.z * b.z);
 }
 
-inline PFLOAT vector3d_t::length()const
+inline float vector3d_t::length()const
 {
 	return fSqrt(x*x+y*y+z*z);
 }
 
-inline PFLOAT point3d_t::length()const
+inline float point3d_t::length()const
 {
 	return fSqrt(x*x+y*y+z*z);
 }
 
 inline vector3d_t& vector3d_t::normalize()
 {
-	PFLOAT len = x*x + y*y + z*z;
-	if (len!=0)
+	float len = x*x + y*y + z*z;
+	if (len > 0.f)
 	{
 		len = 1.0/fSqrt(len);
 		x *= len;
@@ -255,7 +255,7 @@ inline vector3d_t& vector3d_t::normalize()
 
 inline vector3d_t reflect_dir(const vector3d_t &n,const vector3d_t &v)
 {
-	const PFLOAT vn = v*n;
+	const float vn = v*n;
 	if (vn<0) return -v;
 	return 2*vn*n - v;
 }
@@ -286,13 +286,13 @@ inline void createCS(const vector3d_t &N, vector3d_t &u, vector3d_t &v)
 	{
 		// Note: The root cannot become zero if
 		// N.x==0 && N.y==0.
-		const PFLOAT d = 1.0/fSqrt(N.y*N.y + N.x*N.x);
+		const float d = 1.0/fSqrt(N.y*N.y + N.x*N.x);
 		u.set(N.y*d, -N.x*d, 0);
 		v = N^u;
 	}
 }
 
-YAFRAYCORE_EXPORT void ShirleyDisk(PFLOAT r1, PFLOAT r2, PFLOAT &u, PFLOAT &v);
+YAFRAYCORE_EXPORT void ShirleyDisk(float r1, float r2, float &u, float &v);
 
 extern YAFRAYCORE_EXPORT int myseed;
 
@@ -308,7 +308,7 @@ inline int ourRandomI()
 	return myseed;
 }
 
-inline PFLOAT ourRandom()
+inline float ourRandom()
 {
 	const int a = 0x000041A7;
 	const int m = 0x7FFFFFFF;
@@ -317,10 +317,10 @@ inline PFLOAT ourRandom()
 	myseed = a * (myseed % q) - r * (myseed/q);
 	if (myseed < 0)
 		myseed += m;
-	return (PFLOAT)myseed/(PFLOAT)m;
+	return (float)myseed/(float)m;
 }
 
-inline PFLOAT ourRandom(int &seed)
+inline float ourRandom(int &seed)
 {
 	const int a = 0x000041A7;
 	const int m = 0x7FFFFFFF;
@@ -329,15 +329,15 @@ inline PFLOAT ourRandom(int &seed)
 	seed = a * (seed % q) - r * (seed/q);
 	if (myseed < 0)
 		myseed += m;
-	return (PFLOAT)seed/(PFLOAT)m;
+	return (float)seed/(float)m;
 }
 
 inline vector3d_t RandomSpherical()
 {
-	PFLOAT r;
+	float r;
 	vector3d_t v(0.0, 0.0, ourRandom());
 	if ((r = 1.0 - v.z*v.z)>0.0) {
-		PFLOAT a = M_2PI * ourRandom();
+		float a = M_2PI * ourRandom();
 		r = fSqrt(r);
 		v.x = r * fCos(a);  v.y = r * fSin(a);
 	}
@@ -351,9 +351,9 @@ inline GFLOAT dot( const normal_t &a,const normal_t &b)
 }
 
 YAFRAYCORE_EXPORT vector3d_t randomVectorCone(const vector3d_t &D, const vector3d_t &U, const vector3d_t &V,
-						PFLOAT cosang, PFLOAT z1, PFLOAT z2);
-YAFRAYCORE_EXPORT vector3d_t randomVectorCone(const vector3d_t &dir, PFLOAT cosangle, PFLOAT r1, PFLOAT r2);
-YAFRAYCORE_EXPORT vector3d_t discreteVectorCone(const vector3d_t &dir, PFLOAT cangle, int sample, int square);
+						float cosang, float z1, float z2);
+YAFRAYCORE_EXPORT vector3d_t randomVectorCone(const vector3d_t &dir, float cosangle, float r1, float r2);
+YAFRAYCORE_EXPORT vector3d_t discreteVectorCone(const vector3d_t &dir, float cangle, int sample, int square);
 
 __END_YAFRAY
 
