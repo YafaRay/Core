@@ -306,5 +306,10 @@ set(EMBED_FONT_QT OFF)
 
 #set(BLENDER_EXPORTER_BRANCH "master")
 
+############################## Code Speed Up ###################################
+
+#set(FAST_MATH OFF)
+#set(FAST_TRIG OFF)
+
 ################################# End of file ##################################
 
