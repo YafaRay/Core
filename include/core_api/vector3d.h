@@ -236,11 +236,6 @@ inline PFLOAT vector3d_t::length()const
 	return fSqrt(x*x+y*y+z*z);
 }
 
-inline PFLOAT point3d_t::length()const
-{
-	return fSqrt(x*x+y*y+z*z);
-}
-
 inline vector3d_t& vector3d_t::normalize()
 {
 	PFLOAT len = x*x + y*y + z*z;
@@ -255,7 +250,7 @@ inline vector3d_t& vector3d_t::normalize()
 }
 
 /** Vector reflection.
-    Reflects the vector onto a surface whose normal is \a n
+ *  Reflects the vector onto a surface whose normal is \a n
  *  @param	n Surface normal
  *  @warning	\a n must be unit vector!
  *  @note	Lynn's formula: R = 2*(V dot N)*N -V (http://www.3dkingdoms.com/weekly/weekly.php?a=2)
