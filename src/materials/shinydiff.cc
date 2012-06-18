@@ -6,15 +6,14 @@
 __BEGIN_YAFRAY
 
 shinyDiffuseMat_t::shinyDiffuseMat_t(const color_t &col, const color_t &srcol, float diffuse, float transp, float transl, float sp_refl, float emit):
-			isTranspar(false), isTransluc(false), isReflective(false), isDiffuse(false), fresnelEffect(false),
-			diffuseS(0), bumpS(0), transpS(0), translS(0), specReflS(0), mirColS(0), color(col), specRefCol(srcol),
-			mSpecRefl(sp_refl), mTransp(transp), mTransl(transl), mDiffuse(diffuse), orenNayar(false), nBSDF(0)
+			mIsTransparent(false), mIsTranslucent(false), mIsMirror(false), mIsDiffuse(false), mHasFresnelEffect(false),
+			mDiffuseShader(0), mBumpShader(0), mTransparencyShader(0), mTranslucencyShader(0), mMirrorShader(0), mMirrorColorShader(0), mDiffuseColor(col), mMirrorColor(srcol),
+			mMirrorStrength(sp_refl), mTransparencyStrength(transp), mTranslucencyStrength(transl), mDiffuseStrength(diffuse), mUseOrenNayar(false), nBSDF(0)
 {
-	emitCol = emit*col;
-	emitVal = emit;
-	mDiffuse = diffuse;
+	mEmitColor = emit*col;
+	mEmitStrength = emit;
 	bsdfFlags = BSDF_NONE;
-	if(emitVal > 0.f) bsdfFlags |= BSDF_EMIT;
+	if(mEmitStrength > 0.f) bsdfFlags |= BSDF_EMIT;
 }
 
 shinyDiffuseMat_t::~shinyDiffuseMat_t()
@@ -25,51 +24,52 @@ shinyDiffuseMat_t::~shinyDiffuseMat_t()
 /*! ATTENTION! You *MUST* call this function before using the material, no matter
 	if you want to use shaderNodes or not!
 */
-void shinyDiffuseMat_t::config(shaderNode_t *diff, shaderNode_t *refl, shaderNode_t *transp, shaderNode_t *transl, shaderNode_t *bump)
+void shinyDiffuseMat_t::config(shaderNode_t *diffuseShader, shaderNode_t *mirrorShader, shaderNode_t *transparencyShader, shaderNode_t *translucencyShader, shaderNode_t *bumpShader)
 {
-	diffuseS = diff;
-	bumpS = bump;
-	transpS = transp;
-	translS = transl;
-	specReflS = refl;
+	mDiffuseShader      = diffuseShader;
+	mBumpShader         = bumpShader;
+	mTransparencyShader = transparencyShader;
+	mTranslucencyShader = translucencyShader;
+	mMirrorShader       = mirrorShader;
+
 	nBSDF=0;
 	viNodes[0] = viNodes[1] = viNodes[2] = viNodes[3] = false;
 	vdNodes[0] = vdNodes[1] = vdNodes[2] = vdNodes[3] = false;
 	float acc = 1.f;
-	if(mSpecRefl > 0.00001f || specReflS)
+	if(mMirrorStrength > 0.00001f || mMirrorShader)
 	{
-		isReflective = true;
-		if(specReflS){ if(specReflS->isViewDependant())vdNodes[0] = true; else viNodes[0] = true; }
-		else if(!fresnelEffect) acc = 1.f - mSpecRefl;
+		mIsMirror = true;
+		if(mMirrorShader){ if(mMirrorShader->isViewDependant())vdNodes[0] = true; else viNodes[0] = true; }
+		else if(!mHasFresnelEffect) acc = 1.f - mMirrorStrength;
 		bsdfFlags |= BSDF_SPECULAR | BSDF_REFLECT;
 		cFlags[nBSDF] = BSDF_SPECULAR | BSDF_REFLECT;
 		cIndex[nBSDF] = 0;
 		++nBSDF;
 	}
-	if(mTransp*acc > 0.00001f || transpS)
+	if(mTransparencyStrength*acc > 0.00001f || mTransparencyShader)
 	{
-		isTranspar = true;
-		if(transpS){ if(transpS->isViewDependant())vdNodes[1] = true; else viNodes[1] = true; }
-		else acc *= 1.f - mTransp;
+		mIsTransparent = true;
+		if(mTransparencyShader){ if(mTransparencyShader->isViewDependant())vdNodes[1] = true; else viNodes[1] = true; }
+		else acc *= 1.f - mTransparencyStrength;
 		bsdfFlags |= BSDF_TRANSMIT | BSDF_FILTER;
 		cFlags[nBSDF] = BSDF_TRANSMIT | BSDF_FILTER;
 		cIndex[nBSDF] = 1;
 		++nBSDF;
 	}
-	if(mTransl*acc > 0.00001f || translS)
+	if(mTranslucencyStrength*acc > 0.00001f || mTranslucencyShader)
 	{
-		isTransluc = true;
-		if(translS){ if(translS->isViewDependant())vdNodes[2] = true; else viNodes[2] = true; }
-		else acc *= 1.f - mTransp;
+		mIsTranslucent = true;
+		if(mTranslucencyShader){ if(mTranslucencyShader->isViewDependant())vdNodes[2] = true; else viNodes[2] = true; }
+		else acc *= 1.f - mTransparencyStrength;
 		bsdfFlags |= BSDF_DIFFUSE | BSDF_TRANSMIT;
 		cFlags[nBSDF] = BSDF_DIFFUSE | BSDF_TRANSMIT;
 		cIndex[nBSDF] = 2;
 		++nBSDF;
 	}
-	if(mDiffuse*acc > 0.00001f)
+	if(mDiffuseStrength*acc > 0.00001f)
 	{
-		isDiffuse = true;
-		if(diffuseS){ if(diffuseS->isViewDependant())vdNodes[3] = true; else viNodes[3] = true; }
+		mIsDiffuse = true;
+		if(mDiffuseShader){ if(mDiffuseShader->isViewDependant())vdNodes[3] = true; else viNodes[3] = true; }
 		bsdfFlags |= BSDF_DIFFUSE | BSDF_REFLECT;
 		cFlags[nBSDF] = BSDF_DIFFUSE | BSDF_REFLECT;
 		cIndex[nBSDF] = 3;
@@ -78,35 +78,34 @@ void shinyDiffuseMat_t::config(shaderNode_t *diff, shaderNode_t *refl, shaderNod
 	reqMem = reqNodeMem + sizeof(SDDat_t);
 }
 
-// component should be initialized with mSpecRefl, mTransp, mTransl, mDiffuse
+// component should be initialized with mMirrorStrength, mTransparencyStrength, mTranslucencyStrength, mDiffuseStrength
 // since values for which useNode is false do not get touched so it can be applied
 // twice, for view-independent (initBSDF) and view-dependent (sample/eval) nodes
 
 int shinyDiffuseMat_t::getComponents(const bool *useNode, nodeStack_t &stack, float *component) const
 {
-	if(isReflective)
+	if(mIsMirror)
 	{
-		component[0] = useNode[0] ? specReflS->getScalar(stack) : mSpecRefl;
+		component[0] = useNode[0] ? mMirrorShader->getScalar(stack) : mMirrorStrength;
 	}
-	if(isTranspar)
+	if(mIsTransparent)
 	{
-		component[1] = useNode[1] ? transpS->getScalar(stack) : mTransp;
+		component[1] = useNode[1] ? mTransparencyShader->getScalar(stack) : mTransparencyStrength;
 	}
-	if(isTransluc)
+	if(mIsTranslucent)
 	{
-		component[2] = useNode[2] ? translS->getScalar(stack) : mTransl;
+		component[2] = useNode[2] ? mTranslucencyShader->getScalar(stack) : mTranslucencyStrength;
 	}
-	if(isDiffuse)
+	if(mIsDiffuse)
 	{
-		component[3] = mDiffuse;
+		component[3] = mDiffuseStrength;
 	}
 	return 0;
 }
 
 inline void shinyDiffuseMat_t::getFresnel(const vector3d_t &wo, const vector3d_t &n, float &Kr) const
 {
-	Kr = 1.f;
-	if(fresnelEffect)
+	if(mHasFresnelEffect)
 	{
 		vector3d_t N;
 
@@ -120,13 +119,17 @@ inline void shinyDiffuseMat_t::getFresnel(const vector3d_t &wo, const vector3d_t
 		}
 
 		float c = wo*N;
-		float g = IOR + c*c - 1.f;
+		float g = mIOR_Squared + c*c - 1.f;
 		if(g < 0.f) g = 0.f;
 		else g = fSqrt(g);
 		float aux = c * (g+c);
 
 		Kr = ( ( 0.5f * (g-c) * (g-c) )/( (g+c)*(g+c) ) ) *
 			   ( 1.f + ((aux-1)*(aux-1))/((aux+1)*(aux+1)) );
+	}
+	else
+	{
+		Kr = 1.f;
 	}
 }
 
@@ -153,9 +156,9 @@ void shinyDiffuseMat_t::initBSDF(const renderState_t &state, const surfacePoint_
 	nodeStack_t stack(dat->nodeStack);
 	
 	//bump mapping (extremely experimental)
-	if(bumpS)
+	if(mBumpShader)
 	{
-		evalBump(stack, state, sp, bumpS);
+		evalBump(stack, state, sp, mBumpShader);
 	}
 	
 	//eval viewindependent nodes
@@ -166,14 +169,25 @@ void shinyDiffuseMat_t::initBSDF(const renderState_t &state, const surfacePoint_
 	getComponents(viNodes, stack, dat->component);
 }
 
+/** Initialize Oren Nayar reflectance.
+ *  Initialize Oren Nayar A and B coefficient.
+ *  @param	sigma Roughness of the surface
+ */
 void shinyDiffuseMat_t::initOrenNayar(double sigma)
 {
-	double sigma2 = sigma*sigma;
-	A = 1.0 - 0.5*(sigma2 / (sigma2+0.33));
-	B = 0.45 * sigma2 / (sigma2 + 0.09);
-	orenNayar = true;
+	double sigma_squared = sigma * sigma;
+	mOrenNayar_A = 1.0 - 0.5 * (sigma_squared / (sigma_squared + 0.33));
+	mOrenNayar_B = 0.45 * sigma_squared / (sigma_squared + 0.09);
+	mUseOrenNayar = true;
 }
 
+/** Calculate Oren Nayar reflectance.
+ *  Calculate Oren Nayar reflectance for a given reflection.
+ *  @param	wi Reflected ray direction
+ *  @param	wo Incident ray direction
+ *  @param	N  Surface normal
+ *  @note	http://en.wikipedia.org/wiki/Oren-Nayar_reflectance_model
+ */
 CFLOAT shinyDiffuseMat_t::OrenNayar(const vector3d_t &wi, const vector3d_t &wo, const vector3d_t &N) const
 {
 	PFLOAT cos_ti = std::max(-1.f,std::min(1.f,N*wi));
@@ -200,7 +214,7 @@ CFLOAT shinyDiffuseMat_t::OrenNayar(const vector3d_t &wi, const vector3d_t &wo, 
 		tan_beta = fSqrt(1.f - cos_ti*cos_ti) / ((cos_ti == 0.f)?1e-8f:cos_ti); // white (black on windows) dots fix for oren-nayar, could happen with bad normals
 	}
 	
-	return A + B * maxcos_f * sin_alpha * tan_beta;
+	return mOrenNayar_A + mOrenNayar_B * maxcos_f * sin_alpha * tan_beta;
 }
 
 
@@ -223,13 +237,13 @@ color_t shinyDiffuseMat_t::eval(const renderState_t &state, const surfacePoint_t
 	
 	if(transmit) // light comes from opposite side of surface
 	{
-		if(isTransluc) return dat->component[2] * mT * (diffuseS ? diffuseS->getColor(stack) : color);
+		if(mIsTranslucent) return dat->component[2] * mT * (mDiffuseShader ? mDiffuseShader->getColor(stack) : mDiffuseColor);
 	}
 	
 	if(N*wl < 0.0) return color_t(0.f);
 	float mD = mT*(1.f - dat->component[2]) * dat->component[3];
-	if(orenNayar) mD *= OrenNayar(wo, wl, N);
-	return mD * (diffuseS ? diffuseS->getColor(stack) : color);
+	if(mUseOrenNayar) mD *= OrenNayar(wo, wl, N);
+	return mD * (mDiffuseShader ? mDiffuseShader->getColor(stack) : mDiffuseColor);
 }
 
 color_t shinyDiffuseMat_t::emit(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo)const
@@ -237,7 +251,7 @@ color_t shinyDiffuseMat_t::emit(const renderState_t &state, const surfacePoint_t
 	SDDat_t *dat = (SDDat_t *)state.userdata;
 	nodeStack_t stack(dat->nodeStack);
 	
-	return (diffuseS ? diffuseS->getColor(stack) * emitVal : emitCol);
+	return (mDiffuseShader ? mDiffuseShader->getColor(stack) * mEmitStrength : mEmitColor);
 }
 
 color_t shinyDiffuseMat_t::sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const
@@ -286,7 +300,7 @@ color_t shinyDiffuseMat_t::sample(const renderState_t &state, const surfacePoint
 		case (BSDF_SPECULAR | BSDF_REFLECT): // specular reflect
 			wi = reflect_dir(N, wo);
 			s.pdf = width[pick]; 
-			scolor = (mirColS ? mirColS->getColor(stack) : specRefCol) * (accumC[0]);
+			scolor = (mMirrorColorShader ? mMirrorColorShader->getColor(stack) : mMirrorColor) * (accumC[0]);
 			if(s.reverse)
 			{
 				s.pdf_back = s.pdf;
@@ -296,7 +310,7 @@ color_t shinyDiffuseMat_t::sample(const renderState_t &state, const surfacePoint
 			break;
 		case (BSDF_TRANSMIT | BSDF_FILTER): // "specular" transmit
 			wi = -wo;
-			scolor = accumC[1] * (filter*(diffuseS ? diffuseS->getColor(stack) : color) + color_t(1.f-filter) );
+			scolor = accumC[1] * (mTransmitFilterStrength*(mDiffuseShader ? mDiffuseShader->getColor(stack) : mDiffuseColor) + color_t(1.f-mTransmitFilterStrength) );
 			cos_N = std::fabs(wi*N);
 			if(cos_N < 1e-6) s.pdf = 0.f;
 			else s.pdf = width[pick];
@@ -304,14 +318,14 @@ color_t shinyDiffuseMat_t::sample(const renderState_t &state, const surfacePoint
 		case (BSDF_DIFFUSE | BSDF_TRANSMIT): // translucency (diffuse transmitt)
 			wi = SampleCosHemisphere(-N, sp.NU, sp.NV, s1, s.s2);
 			cos_Ng_wi = sp.Ng*wi;
-			if(cos_Ng_wo*cos_Ng_wi < 0) scolor = accumC[2] * (diffuseS ? diffuseS->getColor(stack) : color);
+			if(cos_Ng_wo*cos_Ng_wi < 0) scolor = accumC[2] * (mDiffuseShader ? mDiffuseShader->getColor(stack) : mDiffuseColor);
 			s.pdf = std::fabs(wi*N) * width[pick]; break;
 		case (BSDF_DIFFUSE | BSDF_REFLECT): // diffuse reflect
 		default:
 			wi = SampleCosHemisphere(N, sp.NU, sp.NV, s1, s.s2);
 			cos_Ng_wi = sp.Ng*wi;
-			if(cos_Ng_wo*cos_Ng_wi > 0) scolor = accumC[3] * (diffuseS ? diffuseS->getColor(stack) : color);
-			if(orenNayar) scolor *= OrenNayar(wo, wi, N);
+			if(cos_Ng_wo*cos_Ng_wi > 0) scolor = accumC[3] * (mDiffuseShader ? mDiffuseShader->getColor(stack) : mDiffuseColor);
+			if(mUseOrenNayar) scolor *= OrenNayar(wo, wi, N);
 			s.pdf = std::fabs(wi*N) * width[pick]; break;
 	}
 	s.sampledFlags = choice[pick];
@@ -361,34 +375,57 @@ float shinyDiffuseMat_t::pdf(const renderState_t &state, const surfacePoint_t &s
 }
 
 
-
-// todo!
-
-void shinyDiffuseMat_t::getSpecular(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo,
-							  bool &reflect, bool &refract, vector3d_t *const dir, color_t *const col)const
+/** Perfect specular reflection.
+ *  Calculate perfect specular reflection and refraction from the material for
+ *  a given surface point \a sp and a given incident ray direction \a wo
+ *  @param	state Render state
+ *  @param	sp Surface point
+ *  @param	wo Incident ray direction
+ *  @param	doReflect Boolean value which is true if you have a reflection, false otherwise
+ *  @param	doRefract Boolean value which is true if you have a refraction, false otherwise
+ *  @param	wi Array of two vectors to record reflected ray direction (wi[0]) and refracted ray direction (wi[1])
+ *  @param	col Array of two colors to record reflected ray color (col[0]) and refracted ray color (col[1])
+ */
+void shinyDiffuseMat_t::getSpecular(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, bool &doReflect, bool &doRefract, vector3d_t *const wi, color_t *const col)const
 {
 	SDDat_t *dat = (SDDat_t *)state.userdata;
 	nodeStack_t stack(dat->nodeStack);
-	bool backface = sp.Ng * wo < 0;
-	vector3d_t N = backface ? -sp.N : sp.N;
-	vector3d_t Ng = backface ? -sp.Ng : sp.Ng;
+
+	const bool backface = wo * sp.Ng < 0.f;
+	const vector3d_t N  = backface ? -sp.N  : sp.N;
+	const vector3d_t Ng = backface ? -sp.Ng : sp.Ng;
+
 	float Kr;
 	getFresnel(wo, N, Kr);
-	refract = isTranspar;
-	if(isTranspar)
+
+	if(mIsTransparent)
 	{
-		dir[1] = -wo;
-		color_t tcol = filter * (diffuseS ? diffuseS->getColor(stack) : color) + color_t(1.f-filter);
+		doRefract = true;
+		wi[1] = -wo;
+		color_t tcol = mTransmitFilterStrength * (mDiffuseShader ? mDiffuseShader->getColor(stack) : mDiffuseColor) + color_t(1.f-mTransmitFilterStrength);
 		col[1] = (1.f - dat->component[0]*Kr) * dat->component[1] * tcol;
 	}
-	reflect=isReflective;
-	if(isReflective)
+	else
 	{
-		dir[0] = wo;
-		dir[0].reflect(N);
-		PFLOAT cos_wi_Ng = dir[0]*Ng;
-		if(cos_wi_Ng < 0.01){ dir[0] += (0.01-cos_wi_Ng)*Ng; dir[0].normalize(); }
-		col[0] = (mirColS ? mirColS->getColor(stack) : specRefCol) * (dat->component[0]*Kr);
+		doRefract = false;
+	}
+
+	if(mIsMirror)
+	{
+		doReflect = true;
+		wi[0] = wo;
+		wi[0].reflect(N);
+		PFLOAT cos_wi_Ng = wi[0]*Ng;
+		if(cos_wi_Ng < 0.01)
+		{
+			wi[0] += (0.01-cos_wi_Ng)*Ng;
+			wi[0].normalize();
+		}
+		col[0] = (mMirrorColorShader ? mMirrorColorShader->getColor(stack) : mMirrorColor) * (dat->component[0]*Kr);
+	}
+	else
+	{
+		doReflect = false;
 	}
 }
 
@@ -402,22 +439,22 @@ color_t shinyDiffuseMat_t::getTransparency(const renderState_t &state, const sur
 	vector3d_t N = FACE_FORWARD(sp.Ng, sp.N, wo);
 	getFresnel(wo, N, Kr);
 
-	if(isReflective)
+	if(mIsMirror)
 	{
-		accum = 1.f - Kr*(specReflS ? specReflS->getScalar(stack) : mSpecRefl);
+		accum = 1.f - Kr*(mMirrorShader ? mMirrorShader->getScalar(stack) : mMirrorStrength);
 	}
-	if(isTranspar) //uhm...should actually be true if this function gets called anyway...
+	if(mIsTransparent) //uhm...should actually be true if this function gets called anyway...
 	{
-		accum *= transpS ? transpS->getScalar(stack) * accum : mTransp * accum;
+		accum *= mTransparencyShader ? mTransparencyShader->getScalar(stack) * accum : mTransparencyStrength * accum;
 	}
-	color_t tcol = filter * (diffuseS ? diffuseS->getColor(stack) : color) + color_t(1.f-filter);
+	color_t tcol = mTransmitFilterStrength * (mDiffuseShader ? mDiffuseShader->getColor(stack) : mDiffuseColor) + color_t(1.f-mTransmitFilterStrength);
 	return accum * tcol;
 }
 
 CFLOAT shinyDiffuseMat_t::getAlpha(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo)const
 {
 	SDDat_t *dat = (SDDat_t *)state.userdata;
-	if(isTranspar)
+	if(mIsTransparent)
 	{
 		vector3d_t N = FACE_FORWARD(sp.Ng, sp.N, wo);
 		float Kr;
@@ -433,7 +470,7 @@ material_t* shinyDiffuseMat_t::factory(paraMap_t &params, std::list<paraMap_t> &
 	shinyDiffuseMat_t *mat;
 	color_t col=1.f, srCol=1.f;
 	const std::string *name=0;
-	float transp=0.f, emit=0.f, transl=0.f;
+	float transparency=0.f, emit=0.f, translucency=0.f;
 	float sp_refl=0.f;
 	bool fresnEff=false;
 	double IOR = 1.33, filt=1.0;
@@ -441,8 +478,8 @@ material_t* shinyDiffuseMat_t::factory(paraMap_t &params, std::list<paraMap_t> &
 	//bool error=false;
 	params.getParam("color", col);
 	params.getParam("mirror_color", srCol);
-	params.getParam("transparency", transp);
-	params.getParam("translucency", transl);
+	params.getParam("transparency", transparency);
+	params.getParam("translucency", translucency);
 	params.getParam("diffuse_reflect", diffuse);
 	params.getParam("specular_reflect", sp_refl);
 	params.getParam("emit", emit);
@@ -450,13 +487,13 @@ material_t* shinyDiffuseMat_t::factory(paraMap_t &params, std::list<paraMap_t> &
 	params.getParam("fresnel_effect", fresnEff);
 	params.getParam("transmit_filter", filt);
 	// !!remember to put diffuse multiplier in material itself!
-	mat = new shinyDiffuseMat_t(col, srCol, diffuse, transp, transl, sp_refl, emit);
-	mat->filter = filt;
+	mat = new shinyDiffuseMat_t(col, srCol, diffuse, transparency, translucency, sp_refl, emit);
+	mat->mTransmitFilterStrength = filt;
 	
 	if(fresnEff)
 	{
-		mat->IOR = IOR * IOR;
-		mat->fresnelEffect = true;
+		mat->mIOR_Squared = IOR * IOR;
+		mat->mHasFresnelEffect = true;
 	}
 	if(params.getParam("diffuse_brdf", name))
 	{
@@ -467,7 +504,7 @@ material_t* shinyDiffuseMat_t::factory(paraMap_t &params, std::list<paraMap_t> &
 			mat->initOrenNayar(sigma);
 		}
 	}
-	shaderNode_t *diffuseS=0, *bumpS=0, *specReflS=0, *transpS=0, *translS=0;
+	shaderNode_t *mDiffuseShader=0, *mBumpShader=0, *mMirrorShader=0, *mTransparencyShader=0, *mTranslucencyShader=0;
 	std::vector<shaderNode_t *> roots;
 	// create shader nodes:
 	bool success = mat->loadNodes(eparams, render);
@@ -476,41 +513,41 @@ material_t* shinyDiffuseMat_t::factory(paraMap_t &params, std::list<paraMap_t> &
 		if(params.getParam("diffuse_shader", name))
 		{
 			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end()){ diffuseS = i->second; roots.push_back(diffuseS); }
+			if(i!=mat->shader_table.end()){ mDiffuseShader = i->second; roots.push_back(mDiffuseShader); }
 			else Y_WARNING << "ShinyDiffuse: Diffuse shader node '" << *name << "' does not exist!" << yendl;
 		}
 		if(params.getParam("mirror_color_shader", name))
 		{
 			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end()){ mat->mirColS = i->second; roots.push_back(mat->mirColS); }
+			if(i!=mat->shader_table.end()){ mat->mMirrorColorShader = i->second; roots.push_back(mat->mMirrorColorShader); }
 			else Y_WARNING << "ShinyDiffuse: Mirror color shader node '"<<*name<<"' does not exist!" << yendl;
 		}
 		if(params.getParam("bump_shader", name))
 		{
 			Y_INFO << "ShinyDiffuse: Bump shader: " << name << yendl;
 			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end()){ bumpS = i->second; roots.push_back(bumpS); }
+			if(i!=mat->shader_table.end()){ mBumpShader = i->second; roots.push_back(mBumpShader); }
 			else Y_WARNING << "ShinyDiffuse: bump shader node '"<<*name<<"' does not exist!" << yendl;
 		}
 		if(params.getParam("mirror_shader", name))
 		{
 			Y_INFO << "ShinyDiffuse: Mirror shader: " << name << yendl;
 			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end()){ specReflS = i->second; roots.push_back(specReflS); }
+			if(i!=mat->shader_table.end()){ mMirrorShader = i->second; roots.push_back(mMirrorShader); }
 			else Y_WARNING << "ShinyDiffuse: mirror shader node '"<<*name<<"' does not exist!" << yendl;
 		}
 		if(params.getParam("transparency_shader", name))
 		{
 			Y_INFO << "ShinyDiffuse: Transparency shader: " << name << yendl;
 			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end()){ transpS = i->second; roots.push_back(transpS); }
+			if(i!=mat->shader_table.end()){ mTransparencyShader = i->second; roots.push_back(mTransparencyShader); }
 			else Y_WARNING << "ShinyDiffuse: transparency shader node '"<<*name<<"' does not exist!" << yendl;
 		}
 		if(params.getParam("translucency_shader", name))
 		{
 			Y_INFO << "ShinyDiffuse: Translucency shader: " << name << yendl;
 			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end()){ translS = i->second; roots.push_back(translS); }
+			if(i!=mat->shader_table.end()){ mTranslucencyShader = i->second; roots.push_back(mTranslucencyShader); }
 			else Y_WARNING << "ShinyDiffuse: transparency shader node '"<<*name<<"' does not exist!" << yendl;
 		}
 	}
@@ -524,21 +561,21 @@ material_t* shinyDiffuseMat_t::factory(paraMap_t &params, std::list<paraMap_t> &
 
 		std::vector<shaderNode_t *> colorNodes;
 
-		if(diffuseS) mat->getNodeList(diffuseS, colorNodes);
-		if(mat->mirColS) mat->getNodeList(mat->mirColS, colorNodes);
-		if(specReflS) mat->getNodeList(specReflS, colorNodes);
-		if(transpS) mat->getNodeList(transpS, colorNodes);
-		if(translS) mat->getNodeList(translS, colorNodes);
+		if(mDiffuseShader) mat->getNodeList(mDiffuseShader, colorNodes);
+		if(mat->mMirrorColorShader) mat->getNodeList(mat->mMirrorColorShader, colorNodes);
+		if(mMirrorShader) mat->getNodeList(mMirrorShader, colorNodes);
+		if(mTransparencyShader) mat->getNodeList(mTransparencyShader, colorNodes);
+		if(mTranslucencyShader) mat->getNodeList(mTranslucencyShader, colorNodes);
 
 		mat->filterNodes(colorNodes, mat->allViewdep, VIEW_DEP);
 		mat->filterNodes(colorNodes, mat->allViewindep, VIEW_INDEP);
 
-		if(bumpS)
+		if(mBumpShader)
 		{
-			mat->getNodeList(bumpS, mat->bumpNodes);
+			mat->getNodeList(mBumpShader, mat->bumpNodes);
 		}
 	}
-	mat->config(diffuseS, specReflS, transpS, translS, bumpS);
+	mat->config(mDiffuseShader, mMirrorShader, mTransparencyShader, mTranslucencyShader, mBumpShader);
 
 	//===!!!=== test <<< This test should go, is useless, DT
 	if(params.getParam("name", name))
