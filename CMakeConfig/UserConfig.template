@@ -4,8 +4,7 @@
 # Copy this file as UserConfig.txt inside this directory to configure the      #
 # options and paths for your build                                             #
 #                                                                              #
-# Uncoment and set the values of the following lines                           #
-# to configure your build                                                      #
+# Uncoment and set the values of the following lines to configure your build   #
 #                                                                              #
 # NOTE: the defaults work perfectly on most cases                              #
 # don't change anything unless you know what you're doing                      #
@@ -275,6 +274,7 @@ set(EMBED_FONT_QT OFF)
 ########################### Required Python version ############################
 #                                                                              #
 # Use this variable to set the Python version you want to use for the bindings #
+#                                                                              #
 # Default: 2.6                                                                 #
 #                                                                              #
 
@@ -296,10 +296,12 @@ set(EMBED_FONT_QT OFF)
 #set(YAF_SHADOW_BIAS 0.0005)
 
 ############################## Blender Add-On ##################################
+#                                                                              #
 # Options for building YafaRay as a self-contained add-on for Blender          #
-#
+#                                                                              #
+# Default: OFF                                                                 #
 
-#set(BLENDER_ADDON OFF)
+#set(BLENDER_ADDON ON)
 
 # Set the branch to use when building the add-on. If you use Blender v2.62,    #
 # uncomment the next line and change from "master" to "blender-2.62"           #
@@ -307,6 +309,10 @@ set(EMBED_FONT_QT OFF)
 #set(BLENDER_EXPORTER_BRANCH "master")
 
 ############################## Code Speed Up ###################################
+#                                                                              #
+# Options for building YafaRay with mathematical functions approximantions     #
+#                                                                              #
+# Default: ON                                                                  #
 
 #set(FAST_MATH OFF)
 #set(FAST_TRIG OFF)
