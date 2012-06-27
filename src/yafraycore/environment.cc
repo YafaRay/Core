@@ -140,7 +140,7 @@ bool renderEnvironment_t::getPluginPath(std::string &path)
 	HKEY hkey;
 	DWORD dwType, dwSize;
 	
-	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,"Software\\YafRay Team\\YafaRay",0,KEY_READ,&hkey)==ERROR_SUCCESS)
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,"Software\\YafaRay Team\\YafaRay",0,KEY_READ,&hkey)==ERROR_SUCCESS)
 	{
 		dwType = REG_EXPAND_SZ;
 	 	dwSize = MAX_PATH;
@@ -165,7 +165,7 @@ bool renderEnvironment_t::getPluginPath(std::string &path)
 	else Y_ERROR_ENV << "Couldn't find registry key." << yendl;
 
 	Y_ERROR << "Please fix your registry. Maybe you need add/modify" << yendl; 
-	Y_ERROR << "HKEY_LOCAL_MACHINE\\Software\\YafRay Team\\YafRay\\InstallDir" << yendl;
+	Y_ERROR << "HKEY_LOCAL_MACHINE\\Software\\YafaRay Team\\YafaRay\\InstallDir" << yendl;
 	Y_ERROR << "key at registry. You can use \"regedit.exe\" to adjust it at" << yendl;
 	Y_ERROR << "your own risk. If you are unsure, reinstall YafaRay" << yendl;
 
