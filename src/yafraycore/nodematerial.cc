@@ -53,8 +53,8 @@ void recursiveFinder(const shaderNode_t *node, std::set<const shaderNode_t*> &tr
 nodeMaterial_t::~nodeMaterial_t()
 {
 	//clear nodes map:
-	for(std::map<std::string,shaderNode_t *>::iterator i=shader_table.begin();i!=shader_table.end();++i) delete i->second;
-	shader_table.clear();
+	for(std::map<std::string,shaderNode_t *>::iterator i=mShadersTable.begin(); i!=mShadersTable.end(); ++i) delete i->second;
+	mShadersTable.clear();
 }
 
 void nodeMaterial_t::solveNodesOrder(const std::vector<shaderNode_t *> &roots)
@@ -112,17 +112,20 @@ void nodeMaterial_t::evalBump(nodeStack_t &stack, const renderState_t &state, co
 	applyBump(sp, du, dv);
 }
 
-bool nodeMaterial_t::loadNodes(const std::list<paraMap_t> &eparams, renderEnvironment_t &render)
+bool nodeMaterial_t::loadNodes(const std::list<paraMap_t> &paramsList, renderEnvironment_t &render)
 {
 	bool error=false;
-	const std::string *type=0, *name=0, *el=0;
-	std::list<paraMap_t>::const_iterator i=eparams.begin();
+	const std::string *type=0;
+    const std::string *name=0;
+    const std::string *element=0;
+
+	std::list<paraMap_t>::const_iterator i=paramsList.begin();
 	
-	for(; i!=eparams.end(); ++i)
+	for(; i!=paramsList.end(); ++i)
 	{
-		if( i->getParam("element", el))
+		if( i->getParam("element", element))
 		{
-			if(*el != "shader_node") continue;
+			if(*element != "shader_node") continue;
 		}
 		else Y_WARNING << "NodeMaterial: No element type given; assuming shader node" << yendl;
 		
@@ -133,7 +136,7 @@ bool nodeMaterial_t::loadNodes(const std::list<paraMap_t> &eparams, renderEnviro
 			break;
 		}
 		
-		if(shader_table.find(*name) != shader_table.end() )
+		if(mShadersTable.find(*name) != mShadersTable.end() )
 		{
 			Y_ERROR << "NodeMaterial: Multiple nodes with identically names!" << yendl;
 			error = true;
@@ -150,7 +153,10 @@ bool nodeMaterial_t::loadNodes(const std::list<paraMap_t> &eparams, renderEnviro
 		renderEnvironment_t::shader_factory_t *fac = render.getShaderNodeFactory(*type);
 		shaderNode_t *shader=0;
 		
-		if(fac) shader = fac(*i, render);
+		if(fac)
+        {
+            shader = fac(*i, render);
+        }
 		else
 		{
 			Y_ERROR << "NodeMaterial: Don't know how to create shader node of type '"<<*type<<"'!" << yendl;
@@ -160,7 +166,7 @@ bool nodeMaterial_t::loadNodes(const std::list<paraMap_t> &eparams, renderEnviro
 		
 		if(shader)
 		{
-			shader_table[*name] = shader;
+			mShadersTable[*name] = shader;
 			allNodes.push_back(shader);
 			Y_INFO << "NodeMaterial: Added ShaderNode '"<<*name<<"'! ("<<(void*)shader<<")" << yendl;
 		}
@@ -174,9 +180,9 @@ bool nodeMaterial_t::loadNodes(const std::list<paraMap_t> &eparams, renderEnviro
 	
 	if(!error) //configure node inputs
 	{
-		sNodeFinder_t finder(shader_table);
+		sNodeFinder_t finder(mShadersTable);
 		int n=0;
-		for(i=eparams.begin(); i!=eparams.end(); ++i, ++n)
+		for(i=paramsList.begin(); i!=paramsList.end(); ++i, ++n)
 		{
 			if( !allNodes[n]->configInputs(*i, finder) )
 			{
@@ -189,11 +195,32 @@ bool nodeMaterial_t::loadNodes(const std::list<paraMap_t> &eparams, renderEnviro
 	if(error)
 	{
 		//clear nodes map:
-		for(std::map<std::string,shaderNode_t *>::iterator i=shader_table.begin();i!=shader_table.end();++i) delete i->second;
-		shader_table.clear();
+		for(std::map<std::string,shaderNode_t *>::iterator i=mShadersTable.begin();i!=mShadersTable.end();++i) delete i->second;
+		mShadersTable.clear();
 	}
 	
 	return !error;
+}
+
+void nodeMaterial_t::parseNodes(const paraMap_t &params, std::vector<shaderNode_t *> &roots, std::map<std::string, shaderNode_t *> &nodeList)
+{
+    const std::string *name=0;
+    std::map<std::string, shaderNode_t *>::iterator currentNode;
+
+    for(currentNode = nodeList.begin(); currentNode != nodeList.end(); ++currentNode)
+    {
+        if(params.getParam(currentNode->first, name))
+        {
+            std::map<std::string,shaderNode_t *>::const_iterator i = mShadersTable.find(*name);
+         
+            if(i!=mShadersTable.end())
+            {
+                currentNode->second = i->second;
+                roots.push_back(currentNode->second);
+            }
+            else Y_WARNING << "Shader node " << currentNode->first << " '" << *name << "' does not exist!" << yendl;
+        }
+    }
 }
 
 __END_YAFRAY

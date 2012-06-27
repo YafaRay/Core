@@ -152,8 +152,8 @@ material_t* maskMat_t::factory(paraMap_t &params, std::list< paraMap_t > &eparam
 	{
 		if(params.getParam("mask", name))
 		{
-			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end()){ mat->mask = i->second; roots.push_back(mat->mask); }
+			std::map<std::string,shaderNode_t *>::const_iterator i=mat->mShadersTable.find(*name);
+			if(i!=mat->mShadersTable.end()){ mat->mask = i->second; roots.push_back(mat->mask); }
 			else
 			{
 				Y_ERROR << "MaskMat: Mask shader node '" << *name << "' does not exist!" << yendl;

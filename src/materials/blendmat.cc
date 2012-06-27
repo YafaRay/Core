@@ -394,8 +394,8 @@ material_t* blendMat_t::factory(paraMap_t &params, std::list<paraMap_t> &eparams
 	{
 		if(params.getParam("mask", name))
 		{
-			std::map<std::string,shaderNode_t *>::const_iterator i=mat->shader_table.find(*name);
-			if(i!=mat->shader_table.end())
+			std::map<std::string,shaderNode_t *>::const_iterator i=mat->mShadersTable.find(*name);
+			if(i!=mat->mShadersTable.end())
 			{
 				mat->blendS = i->second;
 				mat->recalcBlend = true;

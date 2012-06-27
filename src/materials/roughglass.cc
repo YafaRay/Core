@@ -219,7 +219,6 @@ material_t* roughGlassMat_t::factory(paraMap_t &params, std::list< paraMap_t > &
 
 	std::vector<shaderNode_t *> roots;
 	std::map<std::string, shaderNode_t *> nodeList;
-	std::map<std::string, shaderNode_t *>::iterator actNode;
 	
 	// Prepare our node list
 	nodeList["mirror_color_shader"] = NULL;
@@ -227,20 +226,7 @@ material_t* roughGlassMat_t::factory(paraMap_t &params, std::list< paraMap_t > &
 	
 	if(mat->loadNodes(paramList, render))
 	{
-		for(actNode = nodeList.begin(); actNode != nodeList.end(); ++actNode)
-		{
-			if(params.getParam(actNode->first, name))
-			{
-				std::map<std::string,shaderNode_t *>::const_iterator i = mat->shader_table.find(*name);
-				
-				if(i!=mat->shader_table.end())
-				{
-					actNode->second = i->second;
-					roots.push_back(actNode->second);
-				}
-				else Y_WARNING << "RoughGlass: Shader node " << actNode->first << " '" << *name << "' does not exist!" << yendl;
-			}
-		}
+        mat->parseNodes(params, roots, nodeList);
 	}
 	else Y_ERROR << "RoughGlass: loadNodes() failed!" << yendl;
 
