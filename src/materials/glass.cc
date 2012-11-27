@@ -29,7 +29,7 @@ class glassMat_t: public nodeMaterial_t
 {
 	public:
 		glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS);
-		virtual void initBSDF(const renderState_t &state, const surfacePoint_t &sp, unsigned int &bsdfTypes)const;
+        virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, unsigned int &bsdfTypes)const;
 		virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wl, BSDF_t bsdfs)const {return color_t(0.0);}
 		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const;
 		virtual float pdf(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wi, BSDF_t bsdfs)const {return 0.f;}
@@ -68,7 +68,7 @@ glassMat_t::glassMat_t(float IOR, color_t filtC, const color_t &srcol, double di
 	}
 }
 
-void glassMat_t::initBSDF(const renderState_t &state, const surfacePoint_t &sp, BSDF_t &bsdfTypes)const
+void glassMat_t::initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes)const
 {
 	nodeStack_t stack(state.userdata);
 	if(bumpS) evalBump(stack, state, sp, bumpS);
@@ -349,7 +349,7 @@ class mirrorMat_t: public material_t
 		refCol = rCol * refVal;
 		bsdfFlags = BSDF_SPECULAR;
 	}
-	virtual void initBSDF(const renderState_t &state, const surfacePoint_t &sp, unsigned int &bsdfTypes)const { bsdfTypes=bsdfFlags; }
+    virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, unsigned int &bsdfTypes)const { bsdfTypes=bsdfFlags; }
 	virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wl, BSDF_t bsdfs)const {return color_t(0.0);}
 	virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const;
 	virtual void getSpecular(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo,
@@ -398,7 +398,7 @@ class nullMat_t: public material_t
 {
 	public:
 	nullMat_t() { }
-	virtual void initBSDF(const renderState_t &state, const surfacePoint_t &sp, unsigned int &bsdfTypes)const { bsdfTypes=BSDF_NONE; }
+    virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, unsigned int &bsdfTypes)const { bsdfTypes=BSDF_NONE; }
 	virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wl, BSDF_t bsdfs)const {return color_t(0.0);}
 	virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const;
 	static material_t* factory(paraMap_t &, std::list< paraMap_t > &, renderEnvironment_t &);

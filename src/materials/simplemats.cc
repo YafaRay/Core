@@ -37,7 +37,7 @@ class lightMat_t: public material_t
 {
 	public:
 		lightMat_t(color_t lightC, bool ds=false);
-		virtual void initBSDF(const renderState_t &state, const surfacePoint_t &sp, unsigned int &bsdfTypes) const { bsdfTypes=bsdfFlags; }
+        virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, unsigned int &bsdfTypes) const { bsdfTypes=bsdfFlags; }
 		virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wl, BSDF_t bsdfs) const {return color_t(0.0);}
 		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W) const;
 		virtual color_t emit(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo) const;

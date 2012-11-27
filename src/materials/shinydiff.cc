@@ -141,7 +141,7 @@ static inline void accumulate(const float *component, float *accum, float Kr)
     accum[3] = component[3] * acc;
 }
 
-void shinyDiffuseMat_t::initBSDF(const renderState_t &state, const surfacePoint_t &sp, BSDF_t &bsdfTypes)const
+void shinyDiffuseMat_t::initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes)const
 {
     SDDat_t *dat = (SDDat_t *)state.userdata;
     memset(dat, 0, 8*sizeof(float));

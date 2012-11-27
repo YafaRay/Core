@@ -1,5 +1,6 @@
 #include <core_api/surface.h>
 #include <core_api/ray.h>
+#include <utilities/interpolation.h>
 
 __BEGIN_YAFRAY
 
@@ -76,6 +77,22 @@ void spDifferentials_t::refractedRay(const diffRay_t &in, diffRay_t &out, PFLOAT
 PFLOAT spDifferentials_t::projectedPixelArea()
 {
 	return (dPdx ^ dPdy).length();
+}
+
+surfacePoint_t blend_surface_points(surfacePoint_t const& sp_0, surfacePoint_t const& sp_1, float const alpha)
+{
+    surfacePoint_t sp_result(sp_0);
+
+    sp_result.N = lerp(sp_0.N, sp_1.N, alpha);
+
+    sp_result.NU = lerp(sp_0.NU, sp_1.NU, alpha);
+    sp_result.NV = lerp(sp_0.NV, sp_1.NV, alpha);
+    sp_result.dPdU = lerp(sp_0.dPdU, sp_1.dPdU, alpha);
+    sp_result.dPdV = lerp(sp_0.dPdV, sp_1.dPdV, alpha);
+    sp_result.dSdU = lerp(sp_0.dSdU, sp_1.dSdU, alpha);
+    sp_result.dSdV = lerp(sp_0.dSdV, sp_1.dSdV, alpha);
+
+    return sp_result;
 }
 
 __END_YAFRAY

@@ -26,6 +26,14 @@ __BEGIN_YAFRAY
 
 // Algorithms from: http://local.wasp.uwa.edu.au/~pbourke/miscellaneous/interpolation/
 
+template <typename T>
+inline static T lerp(
+        T const& y1, T const& y2,
+        double alpha)
+{
+    return y1 * alpha + y2 * (1.0 - alpha);
+}
+
 inline static double CosineInterpolate(
 		double y1,double y2,
 		double mu)

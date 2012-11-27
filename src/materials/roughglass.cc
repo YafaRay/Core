@@ -41,7 +41,7 @@ roughGlassMat_t::roughGlassMat_t(float IOR, color_t filtC, const color_t &srcol,
 	}
 }
 
-void roughGlassMat_t::initBSDF(const renderState_t &state, const surfacePoint_t &sp, BSDF_t &bsdfTypes) const
+void roughGlassMat_t::initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes) const
 {
 	nodeStack_t stack(state.userdata);
 	if(bumpS) evalBump(stack, state, sp, bumpS);

@@ -75,7 +75,7 @@ struct YAFRAYCORE_EXPORT surfacePoint_t
 	void *origin;
 	
 	// Geometry related
-	mutable vector3d_t N; //!< the shading normal.
+    vector3d_t N; //!< the shading normal.
 	vector3d_t Ng; //!< the geometric normal.
 	vector3d_t orcoNg; //!< the untransformed geometric normal.
 	point3d_t P; //!< the (world) position.
@@ -88,8 +88,8 @@ struct YAFRAYCORE_EXPORT surfacePoint_t
 
 	GFLOAT U; //!< the u texture coord.
 	GFLOAT V; //!< the v texture coord.
-	mutable vector3d_t  NU; //!< second vector building orthogonal shading space with N
-	mutable vector3d_t  NV; //!< third vector building orthogonal shading space with N
+    vector3d_t  NU; //!< second vector building orthogonal shading space with N
+    vector3d_t  NV; //!< third vector building orthogonal shading space with N
 	vector3d_t dPdU; //!< u-axis in world space
 	vector3d_t dPdV; //!< v-axis in world space
 	vector3d_t dSdU; //!< u-axis in shading space (NU, NV, N)
@@ -99,6 +99,8 @@ struct YAFRAYCORE_EXPORT surfacePoint_t
 	//GFLOAT dvdNU;
 	//GFLOAT dvdNV;
 };
+
+surfacePoint_t blend_surface_points(surfacePoint_t const& sp_0, surfacePoint_t const& sp_1, float const alpha);
 
 /*! computes and stores the additional data for surface intersections for
 	differential rays */

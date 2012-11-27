@@ -36,7 +36,7 @@ maskMat_t::maskMat_t(const material_t *m1, const material_t *m2, CFLOAT thresh):
 }
 
 #define PTR_ADD(ptr,sz) ((char*)ptr+(sz))
-void maskMat_t::initBSDF(const renderState_t &state, const surfacePoint_t &sp, BSDF_t &bsdfTypes)const
+void maskMat_t::initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes)const
 {
 	nodeStack_t stack(state.userdata);
 	evalNodes(state, sp, allNodes, stack);

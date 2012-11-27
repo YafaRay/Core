@@ -66,18 +66,29 @@ inline void blendMat_t::getBlendVal(const renderState_t &state, const surfacePoi
 	ival = std::min(1.f, std::max(0.f, 1.f - val));
 }
 
-void blendMat_t::initBSDF(const renderState_t &state, const surfacePoint_t &sp, BSDF_t &bsdfTypes)const
+void blendMat_t::initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes)const
 {
 	void *old_udat = state.userdata;
 	
 	bsdfTypes = BSDF_NONE;
-	
+
+
+    float alpha, inv_alpha;
+    getBlendVal(state, sp, alpha, inv_alpha);
+
+
+    surfacePoint_t sp_0 = sp;
+
 	state.userdata = PTR_ADD(state.userdata, reqMem);
-	mat1->initBSDF(state, sp, mat1Flags);
+    mat1->initBSDF(state, sp_0, mat1Flags);
 	
+    surfacePoint_t sp_1 = sp;
+
 	state.userdata = PTR_ADD(state.userdata, mmem1);
-	mat2->initBSDF(state, sp, mat2Flags);
-	
+    mat2->initBSDF(state, sp_1, mat2Flags);
+
+     sp = blend_surface_points(sp_0, sp_1, inv_alpha);
+
 	bsdfTypes = mat1Flags | mat2Flags;
 	
 	//todo: bump mapping blending

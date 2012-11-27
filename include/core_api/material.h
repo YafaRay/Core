@@ -82,7 +82,7 @@ class YAFRAYCORE_EXPORT material_t
 			like texture lookups etc.
 			\param bsdfTypes returns flags for all bsdf components the material has
 		 */
-		virtual void initBSDF(const renderState_t &state, const surfacePoint_t &sp, BSDF_t &bsdfTypes)const = 0;
+        virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes)const = 0;
 		
 		/*! evaluate the BSDF for the given components.
 				@param types the types of BSDFs to be evaluated (e.g. diffuse only, or diffuse and glossy) */
@@ -147,7 +147,7 @@ class YAFRAYCORE_EXPORT material_t
 	protected:
 		/* small function to apply bump mapping to a surface point 
 			you need to determine the partial derivatives for NU and NV first, e.g. from a shader node */
-		void applyBump(const surfacePoint_t &sp, PFLOAT dfdNU, PFLOAT dfdNV) const;
+        void applyBump(surfacePoint_t &sp, PFLOAT dfdNU, PFLOAT dfdNV) const;
 		
 		BSDF_t bsdfFlags;
 		size_t reqMem; //!< the amount of "temporary" memory required to compute/store surface point specific data

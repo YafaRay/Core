@@ -66,7 +66,7 @@ color_t material_t::getReflectivity(const renderState_t &state, const surfacePoi
 }
 		
 
-void material_t::applyBump(const surfacePoint_t &sp, PFLOAT dfdNU, PFLOAT dfdNV) const
+void material_t::applyBump(surfacePoint_t &sp, PFLOAT dfdNU, PFLOAT dfdNV) const
 {
 	sp.NU += dfdNU * sp.N;
 	sp.NV += dfdNV * sp.N;
