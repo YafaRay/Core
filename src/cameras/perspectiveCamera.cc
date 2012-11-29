@@ -26,9 +26,10 @@
 __BEGIN_YAFRAY
 
 perspectiveCam_t::perspectiveCam_t(const point3d_t &pos, const point3d_t &look, const point3d_t &up,
-		int _resx, int _resy, PFLOAT aspect,
-		PFLOAT df, PFLOAT ap, PFLOAT dofd, bokehType bt, bkhBiasType bbt, PFLOAT bro)
-		:camera_t(pos, look, up,  _resx, _resy, aspect), bkhtype(bt), bkhbias(bbt), aperture(ap) , focal_distance(df), dof_distance(dofd)
+                                   int _resx, int _resy, PFLOAT aspect,
+                                   PFLOAT df, PFLOAT ap, PFLOAT dofd, bokehType bt, bkhBiasType bbt, PFLOAT bro,
+                                   float const near_clip_distance, float const far_clip_distance) :
+    camera_t(pos, look, up,  _resx, _resy, aspect, near_clip_distance, far_clip_distance), bkhtype(bt), bkhbias(bbt), aperture(ap) , focal_distance(df), dof_distance(dofd)
 {
 	// Initialize camera specific plane coordinates
 	setAxis(camX,camY,camZ);
@@ -121,6 +122,8 @@ void perspectiveCam_t::getLensUV(PFLOAT r1, PFLOAT r2, PFLOAT &u, PFLOAT &v) con
 	}
 }
 
+
+
 ray_t perspectiveCam_t::shootRay(PFLOAT px, PFLOAT py, float lu, float lv, PFLOAT &wt) const
 {
 	ray_t ray;
@@ -130,8 +133,8 @@ ray_t perspectiveCam_t::shootRay(PFLOAT px, PFLOAT py, float lu, float lv, PFLOA
 	ray.dir = vright*px + vup*py + vto;
 	ray.dir.normalize();
 
-    ray.tmin = nearClippingDistance;
-    ray.tmax = farClippingDistance;
+    ray.tmin = ray_plane_intersection(ray, near_plane);
+    ray.tmax = ray_plane_intersection(ray, far_plane);
 
 	if (aperture!=0) {
 		PFLOAT u, v;
@@ -221,10 +224,7 @@ camera_t* perspectiveCam_t::factory(paraMap_t &params, renderEnvironment_t &rend
 	if (*bkhbias=="center") 		bbt = BB_CENTER;
 	else if (*bkhbias=="edge") 		bbt = BB_EDGE;
 
-    perspectiveCam_t* cam = new perspectiveCam_t(from, to, up, resx, resy, aspect, dfocal, apt, dofd, bt, bbt, bkhrot);
-
-    cam->nearClippingDistance = nearClip;
-    cam->farClippingDistance = farClip;
+    perspectiveCam_t* cam = new perspectiveCam_t(from, to, up, resx, resy, aspect, dfocal, apt, dofd, bt, bbt, bkhrot, nearClip, farClip);
 
     return cam;
 }

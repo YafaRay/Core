@@ -27,8 +27,8 @@ __BEGIN_YAFRAY
 
 architectCam_t::architectCam_t(const point3d_t &pos, const point3d_t &look, const point3d_t &up,
 		int _resx, int _resy, PFLOAT aspect,
-		PFLOAT df, PFLOAT ap, PFLOAT dofd, bokehType bt, bkhBiasType bbt, PFLOAT bro)
-		:perspectiveCam_t(pos, look, up, _resx, _resy, aspect, df, ap, dofd, bt, bbt, bro)
+        PFLOAT df, PFLOAT ap, PFLOAT dofd, bokehType bt, bkhBiasType bbt, PFLOAT bro, float const near_clip_distance, float const far_clip_distance)
+        :perspectiveCam_t(pos, look, up, _resx, _resy, aspect, df, ap, dofd, bt, bbt, bro, near_clip_distance, far_clip_distance)
 {
 	// Initialize camera specific plane coordinates
 	setAxis(camX,camY,camZ);
@@ -125,10 +125,7 @@ camera_t* architectCam_t::factory(paraMap_t &params, renderEnvironment_t &render
 	bkhBiasType bbt = BB_NONE;
 	if (*bkhbias=="center") 		bbt = BB_CENTER;
 	else if (*bkhbias=="edge") 		bbt = BB_EDGE;
-    architectCam_t* cam = new architectCam_t(from, to, up, resx, resy, aspect, dfocal, apt, dofd, bt, bbt, bkhrot);
-
-    cam->nearClippingDistance = nearClip;
-    cam->farClippingDistance = farClip;
+    architectCam_t* cam = new architectCam_t(from, to, up, resx, resy, aspect, dfocal, apt, dofd, bt, bbt, bkhrot, nearClip, farClip);
 
     return cam;
 }

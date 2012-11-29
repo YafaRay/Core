@@ -26,8 +26,9 @@
 __BEGIN_YAFRAY
 
 angularCam_t::angularCam_t(const point3d_t &pos, const point3d_t &look, const point3d_t &up,
-			int _resx, int _resy, PFLOAT asp, PFLOAT angle, bool circ)
-			:camera_t(pos, look, up, _resx, _resy, asp),hor_phi(angle*M_PI/180.f), circular(circ)
+                           int _resx, int _resy, PFLOAT asp, PFLOAT angle, bool circ,
+                           float const near_clip_distance, float const far_clip_distance) :
+    camera_t(pos, look, up, _resx, _resy, asp, near_clip_distance, far_clip_distance), hor_phi(angle*M_PI/180.f), circular(circ)
 {
 	// Initialize camera specific plane coordinates
 	setAxis(camX,camY,camZ);
@@ -62,8 +63,8 @@ ray_t angularCam_t::shootRay(PFLOAT px, PFLOAT py, float lu, float lv, PFLOAT &w
 	//PFLOAT sp = sin(phi);
 	ray.dir = fSin(phi)*(fCos(theta)*vright + fSin(theta)*vup ) + fCos(phi)*vto;
 
-    ray.tmin = nearClippingDistance;
-    ray.tmax = farClippingDistance;
+    ray.tmin = ray_plane_intersection(ray, near_plane);
+    ray.tmax = ray_plane_intersection(ray, far_plane);
 
 	return ray;
 }
@@ -90,11 +91,9 @@ camera_t* angularCam_t::factory(paraMap_t &params, renderEnvironment_t &render)
     params.getParam("nearClip", nearClip);
     params.getParam("farClip", farClip);
 	
-	angularCam_t *cam = new angularCam_t(from, to, up, resx, resy, aspect, angle, circular);
+    angularCam_t *cam = new angularCam_t(from, to, up, resx, resy, aspect, angle, circular, nearClip, farClip);
 	if(mirrored) cam->vright *= -1.0;
 	cam->max_r = max_angle/angle;
-    cam->nearClippingDistance = nearClip;
-    cam->farClippingDistance = farClip;
 	
 	return cam;
 }
