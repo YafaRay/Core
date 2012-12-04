@@ -5,10 +5,22 @@
 
 __BEGIN_YAFRAY
 
-shinyDiffuseMat_t::shinyDiffuseMat_t(const color_t &diffuseColor, const color_t &mirrorColor, float diffuseStrength, float transparencyStrength, float translucencyStrength, float mirrorStrength, float emitStrength, float transmitFilterStrength):
-            mIsTransparent(false), mIsTranslucent(false), mIsMirror(false), mIsDiffuse(false), mHasFresnelEffect(false),
-            mDiffuseShader(0), mBumpShader(0), mTransparencyShader(0), mTranslucencyShader(0), mMirrorShader(0), mMirrorColorShader(0), mDiffuseColor(diffuseColor), mMirrorColor(mirrorColor),
-            mMirrorStrength(mirrorStrength), mTransparencyStrength(transparencyStrength), mTranslucencyStrength(translucencyStrength), mDiffuseStrength(diffuseStrength), mTransmitFilterStrength(transmitFilterStrength), mUseOrenNayar(false), nBSDF(0)
+shinyDiffuseMat_t::shinyDiffuseMat_t(const color_t &diffuseColor,
+                                     const color_t &mirrorColor,
+                                     float diffuseStrength,
+                                     float transparencyStrength,
+                                     float translucencyStrength,
+                                     float mirrorStrength,
+                                     float emitStrength,
+                                     float transmitFilterStrength):
+
+    mIsTransparent(false), mIsTranslucent(false), mIsMirror(false), mIsDiffuse(false),
+    mHasFresnelEffect(false),
+    mDiffuseShader(0), mBumpShader(0), mTransparencyShader(0), mTranslucencyShader(0), mMirrorShader(0), mMirrorColorShader(0),
+    mDiffuseColor(diffuseColor), mMirrorColor(mirrorColor),
+    mMirrorStrength(mirrorStrength), mTransparencyStrength(transparencyStrength), mTranslucencyStrength(translucencyStrength), mDiffuseStrength(diffuseStrength), mTransmitFilterStrength(transmitFilterStrength),
+    mUseOrenNayar(false),
+    nBSDF(0)
 {
     mEmitColor = emitStrength * diffuseColor;
     mEmitStrength = emitStrength;
@@ -184,8 +196,8 @@ void shinyDiffuseMat_t::initOrenNayar(double sigma)
  */
 CFLOAT shinyDiffuseMat_t::OrenNayar(const vector3d_t &wi, const vector3d_t &wo, const vector3d_t &N) const
 {
-    PFLOAT cos_ti = std::max(-1.f,std::min(1.f,N*wi));
-    PFLOAT cos_to = std::max(-1.f,std::min(1.f,N*wo));
+    PFLOAT cos_ti = std::max(1e-8f,std::min(1.f,N*wi));
+    PFLOAT cos_to = std::max(1e-8f,std::min(1.f,N*wo));
     CFLOAT maxcos_f = 0.f;
     
     if(cos_ti < 0.9999f && cos_to < 0.9999f)
@@ -200,12 +212,12 @@ CFLOAT shinyDiffuseMat_t::OrenNayar(const vector3d_t &wi, const vector3d_t &wo, 
     if(cos_to >= cos_ti)
     {
         sin_alpha = fSqrt(1.f - cos_ti*cos_ti);
-        tan_beta = fSqrt(1.f - cos_to*cos_to) / ((cos_to == 0.f)?1e-8f:cos_to); // white (black on windows) dots fix for oren-nayar, could happen with bad normals
+        tan_beta = fSqrt(1.f - cos_to*cos_to) / cos_to;
     }
     else
     {
         sin_alpha = fSqrt(1.f - cos_to*cos_to);
-        tan_beta = fSqrt(1.f - cos_ti*cos_ti) / ((cos_ti == 0.f)?1e-8f:cos_ti); // white (black on windows) dots fix for oren-nayar, could happen with bad normals
+        tan_beta = fSqrt(1.f - cos_ti*cos_ti) / cos_ti;
     }
     
     return mOrenNayar_A + mOrenNayar_B * maxcos_f * sin_alpha * tan_beta;
