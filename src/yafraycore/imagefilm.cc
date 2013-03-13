@@ -488,9 +488,15 @@ void imageFilm_t::addSample(const colorA_t &c, int x, int y, float dx, float dy,
 			// update pixel values with filtered sample contribution
 			pixel_t &pixel = (*image)(i - cx0, j - cy0);
 			
-			if(premultAlpha) pixel.col += (col * filterWt) * col.A;
-			else pixel.col += (col * filterWt);
-			
+			if(premultAlpha) 
+            {
+                pixel.col += (col * filterWt) * col.A;
+            }
+			else 
+            {
+                col.A=1.0; // force alpha 1.0
+                pixel.col += (col * filterWt);
+            }			
 			pixel.weight += filterWt;
 		}
 	}
