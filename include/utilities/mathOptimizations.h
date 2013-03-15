@@ -8,7 +8,7 @@
  *		fPow() based on the polynomials approach form Jose Fonséca's blog entry:
  *		Fast SSE2 pow: tables or polynomials?
  *		http://jrfonseca.blogspot.com/2008/09/fast-sse2-pow-tables-or-polynomials.html
- *		
+ *
  *		fSin(), fCos() and fTan() based on Fast and Accurate sine/cosine
  *		thread on DevMaster.net forum, posted by Nick
  *		http://www.devmaster.net/forums/showthread.php?t=5784
@@ -55,14 +55,14 @@
 
 __BEGIN_YAFRAY
 
-#define M_2PI		6.28318530717958647692
-#define M_PI2		9.86960440108935861882
-#define M_1_2PI		0.15915494309189533577
-#define M_4_PI		1.27323954473516268615
-#define M_4_PI2		0.40528473456935108578
+#define M_2PI		6.28318530717958647692 // PI * 2
+#define M_PI2		9.86960440108935861882 // PI ^ 2
+#define M_1_2PI		0.15915494309189533577 // 1 / (2 * PI)
+#define M_4_PI		1.27323954473516268615 // 4 / PI
+#define M_4_PI2		0.40528473456935108578 // 4 / PI ^ 2
 
-#define degToRad(deg) (deg * 0.01745329251994329576922)
-#define radToDeg(rad) (rad * 57.29577951308232087684636)
+#define degToRad(deg) (deg * 0.01745329251994329576922)  // deg * PI / 180
+#define radToDeg(rad) (rad * 57.29577951308232087684636) // rad * 180 / PI
 
 #define POLYEXP(x) (float)(x * (x * (x * (x * (x * 1.8775767e-3f + 8.9893397e-3f) + 5.5826318e-2f) + 2.4015361e-1f) + 6.9315308e-1f) + 9.9999994e-1f)
 #define POLYLOG(x) (float)(x * (x * (x * (x * (x * -3.4436006e-2f + 3.1821337e-1f) + -1.2315303f) + 2.5988452) + -3.3241990f) + 3.1157899f)
@@ -108,17 +108,28 @@ inline float fLog2(float x)
 	return (POLYLOG(m.f) * (m.f - one.f) + e.f);
 }
 
-// Two Babylonian Steps method
-inline float bab2xSqrt(float x)
+inline float asmSqrt(float n)
 {
-	bitTwiddler a;
-
-	a.f = x;
-	a.i = (1<<29) + (a.i >> 1) - (1<<22); 
-	
-	// a simplification to add a bit of speed
-	a.f = a.f + x/a.f;
-	return 0.25f*a.f + x/a.f;
+    float r = n;
+#ifdef _MSC_VER
+    __asm
+    {
+		fld r
+		fsqrt
+		fstp r
+    }
+#elif __GNUC__
+    asm(
+		"fld %0;"
+		"fsqrt;"
+		"fstp %0"
+		:"=m" (r)
+		:"m" (r)
+		);
+#else
+    r = fsqrt(n);
+#endif
+    return r;
 }
 
 inline float iSqrt(float x)
@@ -171,9 +182,7 @@ inline float fISqrt(float a)
 inline float fSqrt(float a)
 {
 #ifdef FAST_MATH
-	return bab2xSqrt(a);
-	//return iSqrt(a) * a;
-	//return sqrtf(a);
+	return asmSqrt(a);
 #else
 	return sqrt(a);
 #endif
@@ -226,23 +235,6 @@ inline float fTan(float x)
 #else
 	return tan(x);
 #endif
-}
-
-inline float fAsin(float x)
-{
-	float x2 = x * x;
-	return (x + (0.166666667f + (0.075f + (0.0446428571f + (0.0303819444f + 0.022372159f * x2) * x2) * x2) * x2) * x2);
-}
-
-inline float fAcos(float x)
-{
-	return (float)M_PI_2 - fAsin(x);
-}
-
-inline float fAtan(float x)
-{
-	float x2 = x * x;
-	return (x - (0.333333333333f + (0.2f - (0.1428571429f + (0.111111111111f - 0.0909090909f * x2) * x2) * x2) * x2) * x2);
 }
 __END_YAFRAY
 
