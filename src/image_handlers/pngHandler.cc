@@ -380,8 +380,6 @@ void pngHandler_t::readFromStructs(png_structp pngPtr, png_infop infoPtr)
 
 	int numChan = png_get_channels(pngPtr, infoPtr);
 
-	bool isGray = false;
-
 	switch(colorType)
 	{
 		case PNG_COLOR_TYPE_RGB:
@@ -401,7 +399,6 @@ void pngHandler_t::readFromStructs(png_structp pngPtr, png_infop infoPtr)
 			if (bitDepth < 8)
 			{
 				png_set_gray_to_rgb(pngPtr);
-				isGray = true;
 				bitDepth = 8;
 			}
 			break;
