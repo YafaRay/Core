@@ -28,7 +28,7 @@ __BEGIN_YAFRAY
 class glassMat_t: public nodeMaterial_t
 {
 	public:
-		glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS);
+		glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS, int glass_internal_ref_depth);
         virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, unsigned int &bsdfTypes)const;
 		virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wl, BSDF_t bsdfs)const {return color_t(0.0);}
 		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const;
@@ -39,6 +39,7 @@ class glassMat_t: public nodeMaterial_t
 		virtual void getSpecular(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo,
 								 bool &refl, bool &refr, vector3d_t *const dir, color_t *const col)const;
 		virtual float getMatIOR() const;
+		virtual int getGlassRefDepth() const;
 		static material_t* factory(paraMap_t &, std::list< paraMap_t > &, renderEnvironment_t &);
 	protected:
 		shaderNode_t* bumpS;
@@ -50,11 +51,12 @@ class glassMat_t: public nodeMaterial_t
 		BSDF_t tmFlags;
 		PFLOAT dispersion_power;
 		PFLOAT CauchyA, CauchyB;
+		int glass_internal_reflect_depth;
 };
 
-glassMat_t::glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS):
+glassMat_t::glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS, int glass_internal_ref_depth):
 		bumpS(0), mirColS(0), filterCol(filtC), specRefCol(srcol), absorb(false), disperse(false),
-		fakeShadow(fakeS), dispersion_power(disp_pow)
+		fakeShadow(fakeS), dispersion_power(disp_pow), glass_internal_reflect_depth(glass_internal_ref_depth)
 {
 	ior=IOR;
 	bsdfFlags = BSDF_ALL_SPECULAR;
@@ -204,6 +206,7 @@ CFLOAT glassMat_t::getAlpha(const renderState_t &state, const surfacePoint_t &sp
 void glassMat_t::getSpecular(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo,
 							 bool &refl, bool &refr, vector3d_t *const dir, color_t *const col)const
 {
+	int internal_reflect_depth = getGlassRefDepth();
 	nodeStack_t stack(state.userdata);
 	bool outside = sp.Ng*wo > 0;
 	vector3d_t N;
@@ -233,7 +236,7 @@ void glassMat_t::getSpecular(const renderState_t &state, const surfacePoint_t &s
 		else refr = false; // in this case, we need to sample dispersion, i.e. not considered specular
 		// accounting for fresnel reflection when leaving refractive material is a real performance
 		// killer as rays keep bouncing inside objects and contribute little after few bounces, so limit we it:
-		if(outside || state.raylevel < 2)
+		if(outside || state.raylevel < internal_reflect_depth)
 		{
 			dir[0] = wo;
 			dir[0].reflect(N);
@@ -257,11 +260,17 @@ float glassMat_t::getMatIOR() const
 	return ior;
 }
 
+int glassMat_t::getGlassRefDepth() const
+{
+	return glass_internal_reflect_depth;
+}
+
 material_t* glassMat_t::factory(paraMap_t &params, std::list< paraMap_t > &paramList, renderEnvironment_t &render)
 {
 	double IOR=1.4;
 	double filt=0.f;
 	double disp_power=0.0;
+	int glass_internal_ref_depth=2;
 	color_t filtCol(1.f), absorp(1.f), srCol(1.f);
 	const std::string *name=0;
 	bool fake_shad = false;
@@ -271,7 +280,8 @@ material_t* glassMat_t::factory(paraMap_t &params, std::list< paraMap_t > &param
 	params.getParam("mirror_color", srCol);
 	params.getParam("dispersion_power", disp_power);
 	params.getParam("fake_shadows", fake_shad);
-	glassMat_t *mat = new glassMat_t(IOR, filt*filtCol + color_t(1.f-filt), srCol, disp_power, fake_shad);
+	params.getParam("glass_internal_reflect_depth", glass_internal_ref_depth);
+	glassMat_t *mat = new glassMat_t(IOR, filt*filtCol + color_t(1.f-filt), srCol, disp_power, fake_shad, glass_internal_ref_depth);
 	if( params.getParam("absorption", absorp) )
 	{
 		double dist=1.f;
