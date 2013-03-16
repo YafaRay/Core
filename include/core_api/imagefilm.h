@@ -65,7 +65,7 @@ class YAFRAYCORE_EXPORT imageFilm_t
 		/*! imageFilm_t Constructor */
 		imageFilm_t(int width, int height, int xstart, int ystart, colorOutput_t &out, float filterSize=1.0, filterType filt=BOX,
 		renderEnvironment_t *e = NULL, bool showSamMask = false, int tSize = 32,
-		imageSpliter_t::tilesOrderType tOrder=imageSpliter_t::LINEAR, bool pmA = false, bool drawParams = false);
+		imageSpliter_t::tilesOrderType tOrder=imageSpliter_t::LINEAR, bool pmA = false, bool drawParams = false, bool transpBackground = true);
 		/*! imageFilm_t Destructor */
 		~imageFilm_t();
 		/*! Initialize imageFilm for new rendering, i.e. set pixels black etc */
@@ -121,6 +121,7 @@ class YAFRAYCORE_EXPORT imageFilm_t
 		void setCustomString(const std::string &custom);
 		void setUseParamsBadge(bool on = true) { drawParams = on; }
 		bool getUseParamsBadge() { return drawParams; }
+		bool getTransparentBackground() { return transparent_background; }
 
 		/*! Methods for rendering the parameters badge; Note that FreeType lib is needed to render text */
 		void drawRenderSettings();
@@ -159,6 +160,7 @@ class YAFRAYCORE_EXPORT imageFilm_t
 		bool premultAlpha;
 		int nPasses;
 		bool drawParams;
+		bool transparent_background;
 		std::string aaSettings;
 		std::string integratorSettings;
 		std::string customString;
