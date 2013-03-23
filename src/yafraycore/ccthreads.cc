@@ -229,6 +229,7 @@ void thread_t::wait()
 thread_t::~thread_t()
 {
 	if(running) wait();
+	else pthread_join(id,NULL);
 }
 #elif defined( WIN32_THREADS )
 DWORD WINAPI wrapper (void *data)
