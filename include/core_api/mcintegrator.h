@@ -66,6 +66,8 @@ class YAFRAYCORE_EXPORT mcIntegrator_t: public tiledIntegrator_t
 		int nPaths; //! Number of samples for mc raytracing
 		int maxBounces; //! Max. path depth for mc raytracing
 		std::vector<light_t*> lights; //! An array containing all the scene lights
+		bool transpBackground; //! Render background as transparent
+		bool transpRefractedBackground; //! Render refractions of background as transparent
 };
 
 __END_YAFRAY

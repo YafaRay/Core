@@ -113,10 +113,14 @@ colorA_t pathIntegrator_t::integrate(renderState_t &state, diffRay_t &ray/*, sam
 	static int calls=0;
 	++calls;
 	color_t col(0.0);
-	CFLOAT alpha=0.0;
+	CFLOAT alpha;
 	surfacePoint_t sp;
 	void *o_udat = state.userdata;
 	float W = 0.f;
+	
+	if(transpBackground) alpha=0.0;
+	else alpha=1.0;
+	
 	//shoot ray into scene
 	if(scene->intersect(ray, sp))
 	{
@@ -270,8 +274,12 @@ colorA_t pathIntegrator_t::integrate(renderState_t &state, diffRay_t &ray/*, sam
 
 		recursiveRaytrace(state, ray, bsdfs, sp, wo, col, alpha);
 
-		CFLOAT m_alpha = material->getAlpha(state, sp, wo);
-		alpha = m_alpha + (1.f-m_alpha)*alpha;
+		if(transpRefractedBackground)
+		{
+			CFLOAT m_alpha = material->getAlpha(state, sp, wo);
+			alpha = m_alpha + (1.f-m_alpha)*alpha;
+		}
+		else alpha = 1.0;
 	}
 	else //nothing hit, return background
 	{
@@ -293,6 +301,8 @@ integrator_t* pathIntegrator_t::factory(paraMap_t &params, renderEnvironment_t &
 	int bounces = 3;
 	int raydepth = 5;
 	const std::string *cMethod=0;
+	bool bg_transp = true;
+	bool bg_transp_refract = true;
 	
 	params.getParam("raydepth", raydepth);
 	params.getParam("transpShad", transpShad);
@@ -300,6 +310,8 @@ integrator_t* pathIntegrator_t::factory(paraMap_t &params, renderEnvironment_t &
 	params.getParam("path_samples", path_samples);
 	params.getParam("bounces", bounces);
 	params.getParam("no_recursive", noRec);
+	params.getParam("bg_transp", bg_transp);
+	params.getParam("bg_transp_refract", bg_transp_refract);
 	
 	pathIntegrator_t* inte = new pathIntegrator_t(transpShad, shadowDepth);
 	if(params.getParam("caustic_type", cMethod))
@@ -327,6 +339,9 @@ integrator_t* pathIntegrator_t::factory(paraMap_t &params, renderEnvironment_t &
 	inte->invNPaths = 1.f / (float)path_samples;
 	inte->maxBounces = bounces;
 	inte->no_recursive = noRec;
+	// Background settings
+	inte->transpBackground = bg_transp;
+	inte->transpRefractedBackground = bg_transp_refract;
 	return inte;
 }
 

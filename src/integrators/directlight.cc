@@ -90,10 +90,13 @@ bool directLighting_t::preprocess()
 colorA_t directLighting_t::integrate(renderState_t &state, diffRay_t &ray) const
 {
 	color_t col(0.0);
-	float alpha = 0.0;
+	float alpha;
 	surfacePoint_t sp;
 	void *o_udat = state.userdata;
 	bool oldIncludeLights = state.includeLights;
+
+	if(transpBackground) alpha=0.0;
+	else alpha=1.0;
 
 	// Shoot ray into scene
 
@@ -120,8 +123,12 @@ colorA_t directLighting_t::integrate(renderState_t &state, diffRay_t &ray) const
 
 		recursiveRaytrace(state, ray, bsdfs, sp, wo, col, alpha);
 
-		float m_alpha = material->getAlpha(state, sp, wo);
-		alpha = m_alpha + (1.f - m_alpha) * alpha;
+		if(transpRefractedBackground)
+		{
+			float m_alpha = material->getAlpha(state, sp, wo);
+			alpha = m_alpha + (1.f - m_alpha) * alpha;
+		}
+		else alpha = 1.0;
 	}
 	else // Nothing hit, return background if any
 	{
@@ -145,6 +152,8 @@ integrator_t* directLighting_t::factory(paraMap_t &params, renderEnvironment_t &
 	double cRad = 0.25;
 	double AO_dist = 1.0;
 	color_t AO_col(1.f);
+	bool bg_transp = true;
+	bool bg_transp_refract = true;
 
 	params.getParam("raydepth", raydepth);
 	params.getParam("transpShad", transpShad);
@@ -158,6 +167,8 @@ integrator_t* directLighting_t::factory(paraMap_t &params, renderEnvironment_t &
 	params.getParam("AO_samples", AO_samples);
 	params.getParam("AO_distance", AO_dist);
 	params.getParam("AO_color", AO_col);
+	params.getParam("bg_transp", bg_transp);
+	params.getParam("bg_transp_refract", bg_transp_refract);
 
 	directLighting_t *inte = new directLighting_t(transpShad, shadowDepth, raydepth);
 	// caustic settings
@@ -171,6 +182,10 @@ integrator_t* directLighting_t::factory(paraMap_t &params, renderEnvironment_t &
 	inte->aoSamples = AO_samples;
 	inte->aoDist = AO_dist;
 	inte->aoCol = AO_col;
+	// Background settings
+	inte->transpBackground = bg_transp;
+	inte->transpRefractedBackground = bg_transp_refract;
+	
 	return inte;
 }
 

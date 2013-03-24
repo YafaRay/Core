@@ -466,11 +466,15 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 	color_t col(0.0);
 	GatherInfo gInfo;
 
-	CFLOAT alpha=0.0;
+	CFLOAT alpha;
 	surfacePoint_t sp;
 
 	void *o_udat = state.userdata;
 	bool oldIncludeLights = state.includeLights;
+	
+	if(transpBackground) alpha=0.0;
+	else alpha=1.0;
+	
 	if(scene->intersect(ray, sp))
 	{
 		unsigned char userdata[USER_DATA_SIZE+7];
@@ -783,8 +787,12 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 		}
 		--state.raylevel;
 
-		CFLOAT m_alpha = material->getAlpha(state, sp, wo);
-		alpha = m_alpha + (1.f-m_alpha)*alpha;
+		if(transpRefractedBackground)
+		{
+			CFLOAT m_alpha = material->getAlpha(state, sp, wo);
+			alpha = m_alpha + (1.f-m_alpha)*alpha;
+		}
+		else alpha = 1.0;
 	}
 
 	else //nothing hit, return background
@@ -842,6 +850,8 @@ integrator_t* SPPM::factory(paraMap_t &params, renderEnvironment_t &render)
 	float times = 1.f;
 	int searchNum = 100;
 	float dsRad = 1.0f;
+	bool bg_transp = true;
+	bool bg_transp_refract = true;
 
 	params.getParam("transpShad", transpShad);
 	params.getParam("shadowDepth", shadowDepth);
@@ -854,6 +864,9 @@ integrator_t* SPPM::factory(paraMap_t &params, renderEnvironment_t &render)
 	params.getParam("photonRadius", dsRad);
 	params.getParam("searchNum", searchNum);
 	params.getParam("pmIRE", pmIRE);
+	
+	params.getParam("bg_transp", bg_transp);
+	params.getParam("bg_transp_refract", bg_transp_refract);
 
 	SPPM* ite = new SPPM(numPhotons, _passNum,transpShad, shadowDepth);
 	ite->rDepth = raydepth;
@@ -863,6 +876,9 @@ integrator_t* SPPM::factory(paraMap_t &params, renderEnvironment_t &render)
 	ite->dsRadius = dsRad; // under tests enable now
 	ite->nSearch = searchNum;
 	ite->PM_IRE = pmIRE;
+	// Background settings
+	ite->transpBackground = bg_transp;
+	ite->transpRefractedBackground = bg_transp_refract;
 
 	return ite;
 }

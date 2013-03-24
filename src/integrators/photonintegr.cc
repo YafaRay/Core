@@ -774,11 +774,15 @@ colorA_t photonIntegrator_t::integrate(renderState_t &state, diffRay_t &ray) con
 	static int calls=0;
 	++calls;
 	color_t col(0.0);
-	CFLOAT alpha=0.0;
+	CFLOAT alpha;
 	surfacePoint_t sp;
 	
 	void *o_udat = state.userdata;
 	bool oldIncludeLights = state.includeLights;
+	
+	if(transpBackground) alpha=0.0;
+	else alpha=1.0;
+	
 	if(scene->intersect(ray, sp))
 	{
 		unsigned char userdata[USER_DATA_SIZE+7];
@@ -860,8 +864,12 @@ colorA_t photonIntegrator_t::integrate(renderState_t &state, diffRay_t &ray) con
 		
 		recursiveRaytrace(state, ray, bsdfs, sp, wo, col, alpha);
 
-		CFLOAT m_alpha = material->getAlpha(state, sp, wo);
-		alpha = m_alpha + (1.f-m_alpha)*alpha;
+		if(transpRefractedBackground)
+		{
+			CFLOAT m_alpha = material->getAlpha(state, sp, wo);
+			alpha = m_alpha + (1.f-m_alpha)*alpha;
+		}
+		else alpha = 1.0;
 	}
 	else //nothing hit, return background
 	{
@@ -891,6 +899,8 @@ integrator_t* photonIntegrator_t::factory(paraMap_t &params, renderEnvironment_t
 	float dsRad=0.1;
 	float cRad=0.01;
 	float gatherDist=0.2;
+	bool bg_transp = true;
+	bool bg_transp_refract = true;
 	
 	params.getParam("transpShad", transpShad);
 	params.getParam("shadowDepth", shadowDepth);
@@ -909,6 +919,8 @@ integrator_t* photonIntegrator_t::factory(paraMap_t &params, renderEnvironment_t
 	gatherDist = dsRad;
 	params.getParam("fg_min_pathlen", gatherDist);
 	params.getParam("show_map", show_map);
+	params.getParam("bg_transp", bg_transp);
+	params.getParam("bg_transp_refract", bg_transp_refract);
 	
 	photonIntegrator_t* ite = new photonIntegrator_t(numPhotons, numCPhotons, transpShad, shadowDepth, dsRad, cRad);
 	ite->rDepth = raydepth;
@@ -921,6 +933,9 @@ integrator_t* photonIntegrator_t::factory(paraMap_t &params, renderEnvironment_t
 	ite->gatherBounces = fgBounces;
 	ite->showMap = show_map;
 	ite->gatherDist = gatherDist;
+	// Background settings
+	ite->transpBackground = bg_transp;
+	ite->transpRefractedBackground = bg_transp_refract;
 	return ite;
 }
 
