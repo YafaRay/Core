@@ -213,6 +213,7 @@ void thread_t::run()
 {
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_JOINABLE);
+	pthread_attr_setstacksize(&attr,1048576); //To mitigate crashes/segfaults in Linux. Still not perfect, we need to find the cause of the pthread stack overflows, specially in Photon Mapping.
 	pthread_create(&id,&attr,wrapper,this);
 	running=true;
 }
@@ -229,6 +230,7 @@ void thread_t::wait()
 thread_t::~thread_t()
 {
 	if(running) wait();
+	else pthread_join(id,NULL); //To fix complete hangs in blender-yafaray after rendering several frames in Linux systems.
 }
 #elif defined( WIN32_THREADS )
 DWORD WINAPI wrapper (void *data)
