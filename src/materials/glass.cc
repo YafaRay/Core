@@ -233,7 +233,7 @@ void glassMat_t::getSpecular(const renderState_t &state, const surfacePoint_t &s
 		else refr = false; // in this case, we need to sample dispersion, i.e. not considered specular
 		// accounting for fresnel reflection when leaving refractive material is a real performance
 		// killer as rays keep bouncing inside objects and contribute little after few bounces, so limit we it:
-		if(outside || state.raylevel < 2)
+		if(outside || state.raylevel < 3)
 		{
 			dir[0] = wo;
 			dir[0].reflect(N);
