@@ -181,7 +181,7 @@ class YAFRAYPLUGIN_EXPORT SkyIntegrator : public volumeIntegrator_t {
 				color_t L_s = background->eval(bgray, false);
 				float b_r_angular = b_r * 3 / (2 * M_PI * 8) * (1.0f + (w * (-ray.dir)) * (w * (-ray.dir)));
 				float K = 0.67f;
-				float angle = acos(w * (ray.dir));
+				float angle = fAcos(w * (ray.dir));
 				float b_m_angular = b_m / (2 * K * M_PI) * mieScatter(angle);
 				//std::cout << "w: " << w << " theta: " << theta << " -ray.dir: " << -ray.dir << " angle: " << angle << " mie ang " << b_m_angular << std::endl;
 				S0_m = S0_m + colorA_t(L_s) * b_m_angular;

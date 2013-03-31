@@ -71,7 +71,7 @@ darkSkyBackground_t::darkSkyBackground_t(const point3d_t dir, float turb, float 
 	sunDir.z += alt;
 	sunDir.normalize();
 
-	thetaS = acos(sunDir.z);
+	thetaS = fAcos(sunDir.z);
 
 	act = (nightSky)?"ON":"OFF";
 	Y_INFO << "DarkSky: Night mode [ " << act << " ]" << yendl;
@@ -222,7 +222,7 @@ inline color_t darkSkyBackground_t::getSkyCol(const ray_t &ray) const
 
 	cosGamma = Iw * sunDir;
     cosGamma2 = cosGamma * cosGamma;
-	gamma = acos(cosGamma);
+	gamma = fAcos(cosGamma);
 
 	x = PerezFunction(perez_x, cosTheta, gamma, cosGamma2, zenith_x);
 	y = PerezFunction(perez_y, cosTheta, gamma, cosGamma2, zenith_y);
@@ -312,7 +312,7 @@ background_t *darkSkyBackground_t::factory(paraMap_t &params,renderEnvironment_t
 	darkSkyBackground_t *darkSky = new darkSkyBackground_t(dir, turb, power, bright, clamp, av, bv, cv, dv, ev,
 																altitude, night, exp, gammaEnc, colorS);
 
-	if (add_sun && radToDeg(acos(dir.z)) < 100.0)
+	if (add_sun && radToDeg(fAcos(dir.z)) < 100.0)
 	{
 		vector3d_t d(dir);
 		d.normalize();
