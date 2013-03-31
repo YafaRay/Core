@@ -60,7 +60,7 @@ inline point3d_t spheremap(const point3d_t &p)
 	if (d>0) {
 		res.z = fSqrt(d);
 		if ((p.x!=0) && (p.y!=0)) res.x = -atan2(p.x, p.y) * M_1_PI;
-		res.y = 1.0f - 2.0f*(acos(p.z/res.z) * M_1_PI);
+		res.y = 1.0f - 2.0f*(fAcos(p.z/res.z) * M_1_PI);
 	}
 	return res;
 }
