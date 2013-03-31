@@ -60,6 +60,8 @@ __BEGIN_YAFRAY
 #define M_1_2PI		0.15915494309189533577 // 1 / (2 * PI)
 #define M_4_PI		1.27323954473516268615 // 4 / PI
 #define M_4_PI2		0.40528473456935108578 // 4 / PI ^ 2
+#define M_MINUS_PI	-3.14159265358979323846	/* -pi */
+#define M_MINUS_PI_2		-1.57079632679489661923	/* -pi/2 */
 
 #define degToRad(deg) (deg * 0.01745329251994329576922)  // deg * PI / 180
 #define radToDeg(rad) (rad * 57.29577951308232087684636) // rad * 180 / PI
@@ -236,6 +238,55 @@ inline float fTan(float x)
 	return tan(x);
 #endif
 }
+
+inline float fAcos(float x)
+{
+#ifdef FAST_TRIG
+	return acosf(x);  //no domain checks, acosf instead of acos as the variable is float
+#else
+	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
+	if(x<=-1.0) return(M_PI);
+	else if(x>=1.0) return(0.0);
+	else return acosf(x);  //acosf instead of acos as the variable is float
+#endif
+}
+
+inline double fAcos(double x)
+{
+#ifdef FAST_TRIG
+	return acos(x);  //no domain checks, acos as the variable is double
+#else
+	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
+	if(x<=-1.0) return(M_PI);
+	else if(x>=1.0) return(0.0);
+	else return acos(x);  //no domain checks, acos as the variable is double
+#endif
+}
+
+inline float fAsin(float x)
+{
+#ifdef FAST_TRIG
+	return asinf(x);  //no domain checks, asinf instead of asin as the variable is float
+#else
+	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
+	if(x<=-1.0) return(M_MINUS_PI_2);	
+	else if(x>=1.0) return(M_PI_2);
+	else return asinf(x);  //asinf instead of asin as the variable is float
+#endif
+}
+
+inline double fAsin(double x)
+{
+#ifdef FAST_TRIG
+	return asin(x);  //no domain checks, asin as the variable is double
+#else
+	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
+	if(x<=-1.0) return(M_MINUS_PI_2);	
+	else if(x>=1.0) return(M_PI_2);
+	else return asin(x);  //no domain checks, asin as the variable is double
+#endif
+}
+
 __END_YAFRAY
 
 #endif
