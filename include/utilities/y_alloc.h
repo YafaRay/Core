@@ -10,6 +10,10 @@
 	#include <alloca.h>
 #elif defined (__MINGW32__) //Added by DarkTide to enable mingw32 compliation
 	#include <malloc.h>
+	// povmaniaco: add fix for use MinGW Gcc 4.7.1
+	#define _aligned_malloc __mingw_aligned_malloc
+	#define _aligned_free __mingw_aligned_free
+	// end
 #endif
 
 __BEGIN_YAFRAY
@@ -37,7 +41,7 @@ inline void * y_memalign(size_t bound, size_t size)
 		return (NULL);
 	else
 		return (ret);
-//#else 
+//#else
 //	return memalign(bound, size);
 #endif
 }
@@ -45,9 +49,9 @@ inline void * y_memalign(size_t bound, size_t size)
 inline void y_free(void *ptr) {
 #if (defined (_WIN32) && (defined (_MSC_VER)) || defined (__MINGW32__)) //Added by DarkTide to enable mingw32 compliation
 	_aligned_free(ptr);
-#else 
+#else
 	free(ptr);
-#endif 
+#endif
 }
 
 
