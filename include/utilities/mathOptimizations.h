@@ -241,50 +241,34 @@ inline float fTan(float x)
 
 inline float fAcos(float x)
 {
-#ifdef FAST_TRIG
-	return acosf(x);  //no domain checks, acosf instead of acos as the variable is float
-#else
-	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
-	if(x<=-1.0) return(M_PI);
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
+	if(x<=-1.0) return((float)M_PI);
 	else if(x>=1.0) return(0.0);
-	else return acosf(x);  //acosf instead of acos as the variable is float
-#endif
+	else return acos(x);
 }
 
 inline double fAcos(double x)
 {
-#ifdef FAST_TRIG
-	return acos(x);  //no domain checks, acos as the variable is double
-#else
-	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
 	if(x<=-1.0) return(M_PI);
 	else if(x>=1.0) return(0.0);
-	else return acos(x);  //no domain checks, acos as the variable is double
-#endif
+	else return acos(x);
 }
 
 inline float fAsin(float x)
 {
-#ifdef FAST_TRIG
-	return asinf(x);  //no domain checks, asinf instead of asin as the variable is float
-#else
-	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
-	if(x<=-1.0) return(M_MINUS_PI_2);	
-	else if(x>=1.0) return(M_PI_2);
-	else return asinf(x);  //asinf instead of asin as the variable is float
-#endif
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
+	if(x<=-1.0) return((float)M_MINUS_PI_2);	
+	else if(x>=1.0) return((float)M_PI_2);
+	else return asin(x);
 }
 
 inline double fAsin(double x)
 {
-#ifdef FAST_TRIG
-	return asin(x);  //no domain checks, asin as the variable is double
-#else
-	//checks if variable gets out of domain for some reason, you get the range limit instead of NaN
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
 	if(x<=-1.0) return(M_MINUS_PI_2);	
 	else if(x>=1.0) return(M_PI_2);
-	else return asin(x);  //no domain checks, asin as the variable is double
-#endif
+	else return asin(x);
 }
 
 __END_YAFRAY
