@@ -96,14 +96,14 @@ iesLight_t::iesLight_t(const point3d_t &from, const point3d_t &to, const color_t
 
 void iesLight_t::getAngles(float &u, float &v, const vector3d_t &dir, const float &costheta) const
 {
-	u = (dir.z >= 1.f) ? 0.f : radToDeg(acos(dir.z));
+	u = (dir.z >= 1.f) ? 0.f : radToDeg(fAcos(dir.z));
 	
 	if(dir.y < 0)
 	{
 		u = 360.f - u;
 	}
 	
-	v = (costheta >= 1.f) ? 0.f : radToDeg(acos(costheta));
+	v = (costheta >= 1.f) ? 0.f : radToDeg(fAcos(costheta));
 }
 
 bool iesLight_t::illuminate(const surfacePoint_t &sp, color_t &col, ray_t &wi) const

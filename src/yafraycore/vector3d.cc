@@ -206,7 +206,7 @@ vector3d_t discreteVectorCone(const vector3d_t &dir, PFLOAT cangle, int sample, 
 	PFLOAT r1=(PFLOAT)(sample / square)/(PFLOAT)square;
 	PFLOAT r2=(PFLOAT)(sample % square)/(PFLOAT)square;
 	PFLOAT tt = M_2PI * r1;
-	PFLOAT ss = acos(1.0 - (1.0 - cangle)*r2);
+	PFLOAT ss = fAcos(1.0 - (1.0 - cangle)*r2);
 	vector3d_t	vx(fCos(ss),fSin(ss)*fCos(tt),fSin(ss)*fSin(tt));
 	vector3d_t	i(1,0,0),c;
 	matrix4x4_t M(1);
