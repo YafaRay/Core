@@ -29,7 +29,7 @@ class dirConverter_t
 		}
 		std::pair<unsigned char,unsigned char> convert(const vector3d_t &dir)
 		{
-			int t=(int)(acos(dir.z)*c255Ratio);
+			int t=(int)(fAcos(dir.z)*c255Ratio);
 			int p=(int)(atan2(dir.y,dir.x)*c256Ratio);
 			if(t>254) t=254;
 			else if(t<0) t=0;

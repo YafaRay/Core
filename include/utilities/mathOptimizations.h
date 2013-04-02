@@ -60,6 +60,8 @@ __BEGIN_YAFRAY
 #define M_1_2PI		0.15915494309189533577 // 1 / (2 * PI)
 #define M_4_PI		1.27323954473516268615 // 4 / PI
 #define M_4_PI2		0.40528473456935108578 // 4 / PI ^ 2
+#define M_MINUS_PI	-3.14159265358979323846	/* -pi */
+#define M_MINUS_PI_2		-1.57079632679489661923	/* -pi/2 */
 
 #define degToRad(deg) (deg * 0.01745329251994329576922)  // deg * PI / 180
 #define radToDeg(rad) (rad * 57.29577951308232087684636) // rad * 180 / PI
@@ -236,6 +238,39 @@ inline float fTan(float x)
 	return tan(x);
 #endif
 }
+
+inline float fAcos(float x)
+{
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
+	if(x<=-1.0) return((float)M_PI);
+	else if(x>=1.0) return(0.0);
+	else return acos(x);
+}
+
+inline double fAcos(double x)
+{
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
+	if(x<=-1.0) return(M_PI);
+	else if(x>=1.0) return(0.0);
+	else return acos(x);
+}
+
+inline float fAsin(float x)
+{
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
+	if(x<=-1.0) return((float)M_MINUS_PI_2);	
+	else if(x>=1.0) return((float)M_PI_2);
+	else return asin(x);
+}
+
+inline double fAsin(double x)
+{
+	//checks if variable gets out of domain [-1.0,+1.0], so you get the range limit instead of NaN
+	if(x<=-1.0) return(M_MINUS_PI_2);	
+	else if(x>=1.0) return(M_PI_2);
+	else return asin(x);
+}
+
 __END_YAFRAY
 
 #endif
