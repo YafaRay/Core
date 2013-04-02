@@ -33,7 +33,7 @@ inline void angmap(const point3d_t &p, PFLOAT &u, PFLOAT &v)
 	u = v = 0.f;
 	if (r > 0.f)
 	{
-		float phiRatio = M_1_PI * acos(p.y);//[0,1] range
+		float phiRatio = M_1_PI * fAcos(p.y);//[0,1] range
 		r = phiRatio / fSqrt(r);
 		u = p.x * r;// costheta * r * phiRatio
 		v = p.z * r;// sintheta * r * phiRatio
@@ -65,12 +65,12 @@ inline void spheremap(const point3d_t &p, PFLOAT &u, PFLOAT &v)
 	
 	if(sqrtRPhi > 0.f)
 	{
-		if(p.y < 0.f) phiRatio = (M_2PI - acos(p.x / fSqrt(sqrtRPhi))) * M_1_2PI;
-		else		  phiRatio = acos(p.x / fSqrt(sqrtRPhi)) * M_1_2PI;
+		if(p.y < 0.f) phiRatio = (M_2PI - fAcos(p.x / fSqrt(sqrtRPhi))) * M_1_2PI;
+		else		  phiRatio = fAcos(p.x / fSqrt(sqrtRPhi)) * M_1_2PI;
 		u = 1.f - phiRatio;
 	}
 	
-	v = 1.f - (acos(p.z / fSqrt(sqrtRTheta)) * M_1_PI);
+	v = 1.f - (fAcos(p.z / fSqrt(sqrtRTheta)) * M_1_PI);
 }
 
 // maps u,v coords in the 0..1 interval to a direction
