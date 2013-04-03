@@ -102,6 +102,7 @@ class pdf1D_t
 		// Find surrounding cdf segments
 		float *ptr = std::lower_bound(cdf, cdf+count+1, u);
 		int index = (int) (ptr-cdf-1);
+		if(index<0) index=0; //FIXME: this is one of the fixes for the white dots. Sometimes for some reason this index was -1, causing an access outside the array and an invalid value->NaN, inf, etc. Now, we ensure the index does not move <0, but we should look for a better solution to prevent the index to go <0 in the first place.
 		// Return offset along current cdf segment
 		float delta = (u - cdf[index]) / (cdf[index+1] - cdf[index]);
 		if(pdf) *pdf = func[index] * invIntegral;
