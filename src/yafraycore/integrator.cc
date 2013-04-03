@@ -188,7 +188,7 @@ bool tiledIntegrator_t::renderPass(int samples, int offset, bool adaptive)
 		}
 		tc.countCV.unlock();
 		//join all threads (although they probably have exited already, but not necessarily):
-		for(int i=0;i<nthreads;++i) delete workers[i];
+		for(int i=0;i<nthreads;++i) {workers[i]->wait(); delete workers[i];} //Fix for Linux hangs/crashes, it's better to wait for threads to end before deleting the thread objects. Using code to wait for the threads to end in the destructors is not recommended.
 	}
 	else
 	{

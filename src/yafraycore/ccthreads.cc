@@ -213,17 +213,15 @@ void thread_t::run()
 {
 	pthread_attr_init(&attr);
 	pthread_attr_setdetachstate(&attr,PTHREAD_CREATE_JOINABLE);
+	pthread_attr_setstacksize(&attr,1048576); //A bigger stack size helps to avoid crashes when you use many simultaneous threads.
 	pthread_create(&id,&attr,wrapper,this);
 	running=true;
 }
 
 void thread_t::wait()
 {
-	if(running)
-	{
-		pthread_join(id,NULL);
-		running=false;
-	}
+	pthread_join(id,NULL);
+	running=false;
 }
 
 thread_t::~thread_t()
