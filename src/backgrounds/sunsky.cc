@@ -60,7 +60,7 @@ sunskyBackground_t::sunskyBackground_t(const point3d_t dir, float turb, float a_
 {
 	sunDir.set(dir.x, dir.y, dir.z);
 	sunDir.normalize();
-	thetaS = acos(sunDir.z);
+	thetaS = fAcos(sunDir.z);
 	theta2 = thetaS*thetaS;
 	theta3 = theta2*thetaS;
 	phiS = atan2(sunDir.y, sunDir.x);
@@ -132,7 +132,7 @@ double sunskyBackground_t::AngleBetween(double thetav, double phiv) const
   double cospsi = fSin(thetav) * fSin(thetaS) * fCos(phiS-phiv) + fCos(thetav) * fCos(thetaS);
   if (cospsi > 1)  return 0;
   if (cospsi < -1) return M_PI;
-  return acos(cospsi);
+  return fAcos(cospsi);
 }
 
 inline color_t sunskyBackground_t::getSkyCol(const ray_t &ray) const
@@ -144,7 +144,7 @@ inline color_t sunskyBackground_t::getSkyCol(const ray_t &ray) const
 
 	color_t skycolor(0.0);
 
-	theta = acos(Iw.z);
+	theta = fAcos(Iw.z);
 	if (theta>(0.5*M_PI)) {
 		// this stretches horizon color below horizon, must be possible to do something better...
 		// to compensate, simple fade to black
@@ -244,7 +244,7 @@ background_t *sunskyBackground_t::factory(paraMap_t &params,renderEnvironment_t 
 	
 	if (add_sun)
 	{
-		color_t suncol = ComputeAttenuatedSunlight(acos(std::fabs(dir.z)), turb);//(*new_sunsky)(vector3d_t(dir.x, dir.y, dir.z));
+		color_t suncol = ComputeAttenuatedSunlight(fAcos(std::fabs(dir.z)), turb);//(*new_sunsky)(vector3d_t(dir.x, dir.y, dir.z));
 		double angle = 0.27;
 		double cosAngle = cos(degToRad(angle));
 		float invpdf = (2.f * M_PI * (1.f - cosAngle));
