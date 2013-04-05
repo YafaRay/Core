@@ -36,7 +36,7 @@ bool material_t::scatterPhoton(const renderState_t &state, const surfacePoint_t 
 		CFLOAT new_max = cnew.maximum();
 		CFLOAT old_max = s.lcol.maximum();
 		float prob = std::min(1.f, new_max/old_max);
-		if(s.s3 <= prob)
+		if(s.s3 <= prob && prob > 1e-4f)
 		{
 			s.color = cnew / prob;
 			return true;
