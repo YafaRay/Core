@@ -105,11 +105,12 @@ if (WITH_YAF_PY_BINDINGS)
 	if(APPLE) # use dynamic lookup for helping dlopen to find symbols properly - Jens
 		SET_TARGET_PROPERTIES(${SWIG_MODULE_yafrayinterface_REAL_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
 	endif(APPLE)
+	
 	if(WITH_QT)
 		SWIG_ADD_MODULE(yafqt PYTHON yafqt.i)
-	if(APPLE) # use dynamic lookup for helping dlopen to find symbols properly - Jens
-		SET_TARGET_PROPERTIES(${SWIG_MODULE_yafqt_REAL_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
-	endif(APPLE)
+		if(APPLE) # use dynamic lookup for helping dlopen to find symbols properly - Jens
+			SET_TARGET_PROPERTIES(${SWIG_MODULE_yafqt_REAL_NAME} PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+		endif(APPLE)
 
 	endif(WITH_QT)
 

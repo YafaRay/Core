@@ -75,7 +75,7 @@ class YAFRAYCORE_EXPORT material_t
 	public:
 		material_t(): bsdfFlags(BSDF_NONE), reqMem(0), volI(0), volO(0) {}
 		virtual ~material_t() {}
-		
+
 		/*! Initialize the BSDF of a material. You must call this with the current surface point
 			first before any other methods (except isTransparent/getTransparency)! The renderstate
 			holds a pointer to preallocated userdata to save data that only depends on the current sp,
@@ -83,28 +83,29 @@ class YAFRAYCORE_EXPORT material_t
 			\param bsdfTypes returns flags for all bsdf components the material has
 		 */
         virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes)const = 0;
-		
+
 		/*! evaluate the BSDF for the given components.
 				@param types the types of BSDFs to be evaluated (e.g. diffuse only, or diffuse and glossy) */
 		virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wl, BSDF_t types)const = 0;
-		
+
 		/*! take a sample from the BSDF, given a 2-dimensional sample value and the BSDF types to be sampled from
 			\param s s1, s2 and flags members give necessary information for creating the sample, pdf and sampledFlags need to be returned
 			\param W returns the weight for importance sampling
 		*/
 		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const = 0;// {return color_t(0.f);}
-		
+		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t *const dir, color_t &tcol, sample_t &s, float *const W)const {return color_t(0.f);}
+
 		/*! return the pdf for sampling the BSDF with wi and wo
 		*/
 		virtual float pdf(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wi, BSDF_t bsdfs)const {return 0.f;}
-		
+
 
 		/*! indicate whether light can (partially) pass the material without getting refracted,
 			e.g. a curtain or even very thin foils approximated as single non-refractive layer.
 			used to trace transparent shadows. Note that in this case, initBSDF was NOT called before!
 		*/
 		virtual bool isTransparent() const { return false; }
-		
+
 		/*!	used for computing transparent shadows.	Default implementation returns black (i.e. solid shadow).
 			This is only used for shadow calculations and may only be called when isTransparent returned true.	*/
 		virtual color_t getTransparency(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo)const { return color_t(0.0); }
@@ -116,46 +117,46 @@ class YAFRAYCORE_EXPORT material_t
 		virtual void getSpecular(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo,
 								 bool &reflect, bool &refract, vector3d_t *const dir, color_t *const col)const
 		{ reflect=false; refract=false; }
-		
+
 		/*! get the overall reflectivity of the material (used to compute radiance map for example) */
 		virtual color_t getReflectivity(const renderState_t &state, const surfacePoint_t &sp, BSDF_t flags)const;
-		
+
 		/*!	allow light emitting materials, for realizing correctly visible area lights.
 			default implementation returns black obviously.	*/
 		virtual color_t emit(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo)const { return color_t(0.0); }
-		
+
 		/*! get the volumetric handler for space at specified side of the surface
 			\param inside true means space opposite of surface normal, which is considered "inside" */
 		const volumeHandler_t* getVolumeHandler(bool inside)const { return inside ? volI : volO; }
-		
+
 		/*! special function, get the alpha-value of a material, used to calculate the alpha-channel */
 		virtual CFLOAT getAlpha(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo)const { return 1.f; }
-		
+
 		/*! specialized function for photon mapping. Default function uses the sample function, which will do fine for
 			most materials unless there's a less expensive way or smarter scattering approach */
 		virtual bool scatterPhoton(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wi, vector3d_t &wo, pSample_t &s) const;
-		
+
 		BSDF_t getFlags() const { return bsdfFlags; }
 		/*! Materials may have to do surface point specific (pre-)calculation that need extra storage.
 			returns the required amount of "userdata" memory for all the functions that require a render state */
 		size_t getReqMem() const { return reqMem; }
-		
+
 		/*! Get materials IOR (for refracted photons) */
-		
+
 		virtual float getMatIOR() const { return 1.5f; }
-		
+
 	protected:
-		/* small function to apply bump mapping to a surface point 
+		/* small function to apply bump mapping to a surface point
 			you need to determine the partial derivatives for NU and NV first, e.g. from a shader node */
         void applyBump(surfacePoint_t &sp, PFLOAT dfdNU, PFLOAT dfdNV) const;
-		
+
 		BSDF_t bsdfFlags;
 		size_t reqMem; //!< the amount of "temporary" memory required to compute/store surface point specific data
 		volumeHandler_t* volI; //!< volumetric handler for space inside material (opposed to surface normal)
 		volumeHandler_t* volO; //!< volumetric handler for space outside ofmaterial (where surface normal points to)
 };
 
-	
+
 
 __END_YAFRAY
 

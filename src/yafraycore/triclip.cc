@@ -18,8 +18,8 @@ void _swap(T **a, T **b)
 	x=*a;
 	*a=*b;
 	*b=x;
-};
-	
+}
+
 class DVector
 {
 	public:
@@ -66,7 +66,7 @@ int triBoxClip(const double b_min[3], const double b_max[3], const double triver
 	{
 		DVector *p1, *p2;
 		int nextAxis = (axis+1)%3, prevAxis = (axis+2)%3;
-		
+
 		// === clip lower ===
 		nc=0;
 		p1_inside = (poly[0][axis] >= b_min[axis]) ? true : false;
@@ -116,18 +116,18 @@ int triBoxClip(const double b_min[3], const double b_max[3], const double triver
 			}
 			//else: both outse, do nothing.
 		} //for all edges
-		
+
 		if(nc>9)
 		{
 			Y_INFO << "TriangleClip: after min n is now " << nc << ", that's bad!" << yendl;
 			return 2;
 		}
-		
+
 		cpoly[nc] = cpoly[0];
 		n = nc;
 		_swap(&cpoly, &poly);
-		
-		
+
+
 		// === clip upper ===
 		nc=0;
 		p1_inside = (poly[0][axis] <= b_max[axis]) ? true : false;
@@ -183,14 +183,14 @@ int triBoxClip(const double b_min[3], const double b_max[3], const double triver
 			Y_INFO << "TriangleClip: After max n is now " << nc << ", that's bad!" << yendl;
 			return 2;
 		}
-		
+
 		if(nc == 0) return 1;
 
 		cpoly[nc] = cpoly[0];
 		n = nc;
 		_swap(&cpoly, &poly);
 	} //for all axis
-	
+
 	if(n < 2)
 	{
 		static bool foobar=false;
@@ -199,7 +199,7 @@ int triBoxClip(const double b_min[3], const double b_max[3], const double triver
 		Y_INFO << "TriangleClip: b_min:\t" << b_min[0] << ",\t" << b_min[1] << ",\t" << b_min[2] << yendl;
 		Y_INFO << "TriangleClip: b_max:\t" << b_max[0] << ",\t" << b_max[1] << ",\t" << b_max[2] << yendl;
 		Y_INFO << "TriangleClip: delta:\t" << b_max[0]-b_min[0] << ",\t" << b_max[1]-b_min[1] << ",\t" << b_max[2]-b_min[2] << yendl;
-		
+
 		for(int j=0;j<3;j++)
 		{
 			Y_INFO << "TriangleClip: point" << j << ": " << triverts[j][0] << ",\t" << triverts[j][1] << ",\t" << triverts[j][2] << yendl;
@@ -207,11 +207,11 @@ int triBoxClip(const double b_min[3], const double b_max[3], const double triver
 		foobar=true;
 		return 3;
 	}
-	
+
 	double a[3], g[3];
 	Y_VCPY(a, poly[0]);
 	Y_VCPY(g, poly[0]);
-	
+
 	for(int i=1; i<n; i++)
 	{
 		a[0] = std::min(a[0], poly[i][0]);
@@ -221,15 +221,15 @@ int triBoxClip(const double b_min[3], const double b_max[3], const double triver
 		g[1] = std::max(g[1], poly[i][1]);
 		g[2] = std::max(g[2], poly[i][2]);
 	}
-	
+
 	box.a[0] = a[0], box.g[0] = g[0];
 	box.a[1] = a[1], box.g[1] = g[1];
 	box.a[2] = a[2], box.g[2] = g[2];
-	
+
 	clipDump *output = (clipDump*)n_dat;
 	output->nverts = n;
 	memcpy(output->poly, poly, (n+1)*sizeof(DVector));
-	
+
 	return 0;
 }
 
@@ -240,11 +240,11 @@ int triPlaneClip(double pos, int axis, bool lower, bound_t &box, void* o_dat, vo
 	double t;
 	DVector *poly = input->poly, *cpoly = output->poly;
 	int n=input->nverts, nc;
-	
+
 	bool p1_inside;
 	DVector *p1, *p2;
 	int nextAxis = (axis+1)%3, prevAxis = (axis+2)%3;
-	
+
 	if(lower)
 	{
 		// === clip lower ===
@@ -296,15 +296,15 @@ int triPlaneClip(double pos, int axis, bool lower, bound_t &box, void* o_dat, vo
 			}
 			//else: both outse, do nothing.
 		} //for all edges
-		
+
 		if(nc == 0) return 1;
-		
+
 		if(nc > 9)
 		{
 			Y_INFO << "TriangleClip: After min n is now " << nc << ", that's bad!" << yendl;
 			return 2;
 		}
-		
+
 		cpoly[nc] = cpoly[0];
 		n = nc;
 		_swap(&cpoly, &poly);
@@ -360,20 +360,20 @@ int triPlaneClip(double pos, int axis, bool lower, bound_t &box, void* o_dat, vo
 			}
 			//else: both outse, do nothing.
 		} //for all edges
-		
+
 		if(nc == 0) return 1;
-		
+
 		if(nc > 9)
 		{
 			Y_INFO << "TriangleClip: after max n is now " << nc << ", that's bad!" << yendl;
 			return 2;
 		}
-		
+
 		cpoly[nc] = cpoly[0];
 		n = nc;
 		_swap(&cpoly, &poly);
 	} //for all axis
-	
+
 	if(n < 2)
 	{
 		static bool foobar=false;
@@ -400,9 +400,9 @@ int triPlaneClip(double pos, int axis, bool lower, bound_t &box, void* o_dat, vo
 	box.a[0] = a[0], box.g[0] = g[0];
 	box.a[1] = a[1], box.g[1] = g[1];
 	box.a[2] = a[2], box.g[2] = g[2];
-	
+
 	output->nverts = n;
-	
+
 	return 0;
 }
 

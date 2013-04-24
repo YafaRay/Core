@@ -422,7 +422,7 @@ inline void mcIntegrator_t::recursiveRaytrace(renderState_t &state, diffRay_t &r
 		Halton hal3(3);
 
 		// dispersive effects with recursive raytracing:
-		if( (bsdfs & BSDF_DISPERSIVE) && state.chromatic)
+		if((bsdfs & BSDF_DISPERSIVE) && state.chromatic)
 		{
 			state.includeLights = false; //debatable...
 			int dsam = 8;
@@ -476,9 +476,9 @@ inline void mcIntegrator_t::recursiveRaytrace(renderState_t &state, diffRay_t &r
 		}
 
 		// glossy reflection with recursive raytracing:
-		if( bsdfs & BSDF_GLOSSY )
+		if( bsdfs & BSDF_GLOSSY && state.raylevel < 20)
 		{
-			state.includeLights = false;
+			state.includeLights = true;
 			int gsam = 8;
 			int oldDivision = state.rayDivision;
 			int oldOffset = state.rayOffset;
@@ -507,22 +507,65 @@ inline void mcIntegrator_t::recursiveRaytrace(renderState_t &state, diffRay_t &r
 				float s1 = hal2.getNext();
 				float s2 = hal3.getNext();
 
-				float W = 0.f;
 
-				sample_t s(s1, s2, BSDF_ALL_GLOSSY);
-				color_t mcol = material->sample(state, sp, wo, wi, s, W);
 
-				if(s.sampledFlags & BSDF_GLOSSY)
+				if(material->getFlags() & BSDF_GLOSSY)
 				{
-					refRay = diffRay_t(sp.P, wi, MIN_RAYDIST);
-					if(s.sampledFlags & BSDF_REFLECT) spDiff.reflectedRay(ray, refRay);
-					else if(s.sampledFlags & BSDF_TRANSMIT) spDiff.refractedRay(ray, refRay, material->getMatIOR());
-					gcol += (color_t)integrate(state, refRay) * mcol * W;
-				}
+                    color_t mcol = 0.f;
+                    colorA_t integ = 0.f;
+                    if((material->getFlags() & BSDF_REFLECT) && !(material->getFlags() & BSDF_TRANSMIT))
+                    {
+                        float W = 0.f;
 
-				if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
-				{
-					if(vol->transmittance(state, refRay, vcol)) gcol *= vcol;
+                        sample_t s(s1, s2, BSDF_GLOSSY | BSDF_REFLECT);
+                        color_t mcol = material->sample(state, sp, wo, wi, s, W);
+                        colorA_t integ = 0.f;
+                        refRay = diffRay_t(sp.P, wi, MIN_RAYDIST);
+                        if(s.sampledFlags & BSDF_REFLECT) spDiff.reflectedRay(ray, refRay);
+                        else if(s.sampledFlags & BSDF_TRANSMIT) spDiff.refractedRay(ray, refRay, material->getMatIOR());
+                        integ = (color_t)integrate(state, refRay);
+
+                        if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
+                        {
+                            if(vol->transmittance(state, refRay, vcol)) integ *= vcol;
+                        }
+                        gcol += (color_t)integ * mcol * W;
+                    }
+                    else if((material->getFlags() & BSDF_REFLECT) && (material->getFlags() & BSDF_TRANSMIT))
+                    {
+                        sample_t s(s1, s2, BSDF_GLOSSY | BSDF_ALL_GLOSSY);
+                        color_t mcol[2];
+                        float W[2];
+                        vector3d_t dir[2];
+
+                        mcol[0] = material->sample(state, sp, wo, dir, mcol[1], s, W);
+                        colorA_t integ = 0.f;
+
+                        if(s.sampledFlags & BSDF_REFLECT)
+                        {
+                            refRay = diffRay_t(sp.P, dir[0], MIN_RAYDIST);
+                            spDiff.reflectedRay(ray, refRay);
+                            integ = integrate(state, refRay);
+                            if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
+                            {
+                                if(vol->transmittance(state, refRay, vcol)) integ *= vcol;
+                            }
+                            gcol += (color_t)integ * mcol[0] * W[0];
+                        }
+
+                        if(s.sampledFlags & BSDF_TRANSMIT)
+                        {
+                            refRay = diffRay_t(sp.P, dir[1], MIN_RAYDIST);
+                            spDiff.refractedRay(ray, refRay, material->getMatIOR());
+                            integ = integrate(state, refRay);
+                            if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
+                            {
+                                if(vol->transmittance(state, refRay, vcol)) integ *= vcol;
+                            }
+                            gcol += (color_t)integ * mcol[1] * W[1];
+                            alpha = integ.A;
+                        }
+                    }
 				}
 			}
 

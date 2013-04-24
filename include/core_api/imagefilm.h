@@ -17,7 +17,7 @@
  *      You should have received a copy of the GNU Lesser General Public
  *      License along with this library; if not, write to the Free Software
  *      Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *      
+ *
  */
 
 #ifndef Y_IMAGEFILM_H
@@ -61,7 +61,7 @@ class YAFRAYCORE_EXPORT imageFilm_t
 			GAUSS,
 			LANCZOS
 		};
-		
+
 		/*! imageFilm_t Constructor */
 		imageFilm_t(int width, int height, int xstart, int ystart, colorOutput_t &out, float filterSize=1.0, filterType filt=BOX,
 		renderEnvironment_t *e = NULL, bool showSamMask = false, int tSize = 32,
@@ -71,7 +71,7 @@ class YAFRAYCORE_EXPORT imageFilm_t
 		/*! Initialize imageFilm for new rendering, i.e. set pixels black etc */
 		void init(int numPasses = 0);
 		/*! Allocates memory for the z-buffer rendering */
-		void initDepthMap(); 
+		void initDepthMap();
 		/*! Prepare for next pass, i.e. reset area_cnt, check if pixels need resample...
 			\param adaptive_AA if true, flag pixels to be resampled
 			\param threshold color threshold for adaptive antialiasing */
@@ -141,7 +141,7 @@ class YAFRAYCORE_EXPORT imageFilm_t
 		volatile int next_area;
 		float gamma;
 		CFLOAT AA_thesh;
-		double filterw, tableScale;
+		float filterw, tableScale;
 		float *filterTable;
 		colorOutput_t *output;
 		// Thread mutes for shared access

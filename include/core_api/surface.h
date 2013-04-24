@@ -38,24 +38,19 @@ struct intersectData_t
 	float b1;
 	float b2;
 	float t;
-	
+
 	intersectData_t() : b0(0.f), b1(0.f), b2(0.f), t(0.f)
 	{
 		// Empty
 	}
-	
-	inline void calcB0()
-	{
-		b0 = 1.0 - b1 - b2;
-	}
-	
+
 	inline intersectData_t & operator = (intersectData_t &in)
 	{
 		b0 = in.b0;
 		b1 = in.b1;
 		b2 = in.b2;
 		t = in.t;
-		
+
 		return *this;
 	}
 };
@@ -73,7 +68,7 @@ struct YAFRAYCORE_EXPORT surfacePoint_t
 	const object3d_t *object; //!< object the prim belongs to
 //	point2d_t screenpos; // only used with 'win' texture coord. mode
 	void *origin;
-	
+
 	// Geometry related
     vector3d_t N; //!< the shading normal.
 	vector3d_t Ng; //!< the geometric normal.
@@ -81,7 +76,7 @@ struct YAFRAYCORE_EXPORT surfacePoint_t
 	point3d_t P; //!< the (world) position.
 	point3d_t orcoP;
 //	color_t vertex_col;
-	bool hasUV; 
+	bool hasUV;
 	bool hasOrco;
 	bool available;
 	int primNum;

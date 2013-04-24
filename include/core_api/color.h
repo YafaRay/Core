@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * 			color.h: Color type and operators api 
+ * 			color.h: Color type and operators api
  *      This is part of the yafray package
  *      Copyright (C) 2002  Alejandro Conty Est�vez
  *
@@ -17,7 +17,7 @@
  *      You should have received a copy of the GNU Lesser General Public
  *      License along with this library; if not, write to the Free Software
  *      Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *      
+ *
  */
 #ifndef Y_COLOR_H
 #define Y_COLOR_H
@@ -53,6 +53,8 @@ class YAFRAYCORE_EXPORT color_t
 		color_t(CFLOAT g) { R=G=B=g; }
 		color_t(CFLOAT af[3]) { R=af[0];  G=af[1];  B=af[2]; }
 		bool isBlack() const { return ((R==0) && (G==0) && (B==0)); }
+		bool isNaN() const { return (isnan(R) || isnan(G) || isnan(B)); }
+		bool isInf() const { return (isinf(R) || isinf(G) || isinf(B)); }
 		~color_t() {}
 		void set(CFLOAT r, CFLOAT g, CFLOAT b) { R=r;  G=g;  B=b; }
 
@@ -171,7 +173,7 @@ class YAFRAYCORE_EXPORT rgbe_t
 		{
 			color_t res;
 			CFLOAT f;
-			if (rgbe[3]) 
+			if (rgbe[3])
 			{   /*nonzero pixel*/
 				f = fLdexp(1.0,rgbe[3]-(int)(128+8));
 				return color_t(rgbe[0] * f,rgbe[1] * f,rgbe[2] * f);
@@ -267,13 +269,13 @@ inline color_t & color_t::operator *=(const color_t &c)
 	return *this;
 }*/
 
-inline color_t & color_t::operator +=(const color_t &c) 
+inline color_t & color_t::operator +=(const color_t &c)
 { R += c.R;  G += c.G;  B += c.B;  return *this; }
-inline color_t & color_t::operator *=(const color_t &c) 
+inline color_t & color_t::operator *=(const color_t &c)
 { R *= c.R;  G *= c.G;  B *= c.B;  return *this; }
-inline color_t & color_t::operator *=(CFLOAT f) 
+inline color_t & color_t::operator *=(CFLOAT f)
 { R *= f;  G*= f;  B *= f;  return *this; }
-inline color_t & color_t::operator -=(const color_t &c) 
+inline color_t & color_t::operator -=(const color_t &c)
 { R -= c.R;  G -= c.G;  B -= c.B;  return *this; }
 
 inline colorA_t operator * (const colorA_t &a,const colorA_t &b)

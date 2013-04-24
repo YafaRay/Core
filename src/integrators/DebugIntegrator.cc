@@ -86,7 +86,6 @@ bool DebugIntegrator::preprocess()
 colorA_t DebugIntegrator::integrate(renderState_t &state, diffRay_t &ray/*, sampler_t &sam*/) const
 {
 	color_t col(0.0);
-	CFLOAT alpha=0.0;
 	surfacePoint_t sp;
 	void *o_udat = state.userdata;
 	bool oldIncludeLights = state.includeLights;
@@ -98,7 +97,7 @@ colorA_t DebugIntegrator::integrate(renderState_t &state, diffRay_t &ray/*, samp
 			unsigned char userdata[USER_DATA_SIZE+7];
 			userdata[0] = 0;
 			state.userdata = (void *)( &userdata[7] - ( ((size_t)&userdata[7])&7 ) ); // pad userdata to 8 bytes
-			
+
 			BSDF_t bsdfs;
 			const material_t *material = sp.material;
 			material->initBSDF(state, sp, bsdfs);
@@ -121,7 +120,7 @@ colorA_t DebugIntegrator::integrate(renderState_t &state, diffRay_t &ray/*, samp
 	}
 	state.userdata = o_udat;
 	state.includeLights = oldIncludeLights;
-	return colorA_t(col, alpha);
+	return colorA_t(col, 1.f);
 }
 
 integrator_t* DebugIntegrator::factory(paraMap_t &params, renderEnvironment_t &render)

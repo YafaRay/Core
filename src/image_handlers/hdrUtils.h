@@ -18,7 +18,7 @@
  *      You should have received a copy of the GNU Lesser General Public
  *      License along with this library; if not, write to the Free Software
  *      Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *      
+ *
  */
 
 #include <core_api/color.h>
@@ -28,9 +28,9 @@ __BEGIN_YAFRAY
 
 #pragma pack(push, 1)
 
-struct rgbeHeader_t 
+struct rgbeHeader_t
 {
-	rgbeHeader_t() 
+	rgbeHeader_t()
 	{
 		programType = "RADIANCE";
 		exposure = 1.0f;
@@ -49,7 +49,7 @@ struct rgbePixel_t
 	{
 		int e;
 		float v = c.maximum();
-		
+
 		if (v < 1e-32)
 		{
 			R = G = B = E = 0;
@@ -62,7 +62,7 @@ struct rgbePixel_t
 			B = (yByte) (c.getB() * v);
 			E = (yByte) (e + 128);
 		}
-		
+
 		return *this;
 	}
 
@@ -72,15 +72,15 @@ struct rgbePixel_t
 		G = c.G;
 		B = c.B;
 		E = c.E;
-		
+
 		return *this;
 	}
-	
+
 	yByte &operator [] (int i)
 	{
 		return (&R)[i];
 	}
-	
+
 	colorA_t getRGBA() const
 	{
 		float f;
@@ -93,17 +93,17 @@ struct rgbePixel_t
 
 		return colorA_t(0.f, 0.f, 0.f, 1.0f);
 	}
-	
+
 	bool isORLEDesc()
 	{
 		return ((R == 1) && (G == 1) && (B == 1));
 	}
-	
+
 	bool isARLEDesc()
 	{
 		return ((R == 2) && (G == 2) && ((int)(B << 8 | E) < 0x8000));
 	}
-	
+
 	int getORLECount(int rshift)
 	{
 		return ((int)E << rshift);
@@ -113,7 +113,7 @@ struct rgbePixel_t
 	{
 		return ((int)(B << 8 | E));
 	}
-	
+
 	void setScanlineStart(int w)
 	{
 		R = 2;
@@ -121,7 +121,7 @@ struct rgbePixel_t
 		B = w >> 8;
 		E = w & 0xFF;
 	}
-	
+
 	yByte R;
 	yByte G;
 	yByte B;

@@ -95,7 +95,7 @@ sunskyBackground_t::sunskyBackground_t(const point3d_t dir, float turb, float a_
 	perez_y[2] = (-0.00792 * T + 0.21023) * c_var;
 	perez_y[3] = (-0.04405 * T - 1.65369) * d_var;
 	perez_y[4] = (-0.01092 * T + 0.05291) * e_var;
-};
+}
 
 sunskyBackground_t::~sunskyBackground_t()
 {
@@ -173,9 +173,9 @@ inline color_t sunskyBackground_t::getSkyCol(const ray_t &ray) const
 	double y = PerezFunction(perez_y, theta, gamma, zenith_y);
 	// Luminance scale 1.0/15000.0
 	double Y = 6.666666667e-5 * nfade * hfade * PerezFunction(perez_Y, theta, gamma, zenith_Y);
-	
+
 	if(y == 0.f) return skycolor;
-	
+
 	// conversion to RGB, from gamedev.net thread on skycolor computation
 	double X = (x / y) * Y;
 	double Z = ((1.0 - x - y) / y) * Y;
@@ -223,10 +223,10 @@ background_t *sunskyBackground_t::factory(paraMap_t &params,renderEnvironment_t 
 	// create sunlight with correct color and position?
 	params.getParam("add_sun", add_sun);
 	params.getParam("sun_power", pw);
-	
+
 	params.getParam("background_light", bgl);
 	params.getParam("light_samples", bgl_samples);
-	
+
 	background_t *new_sunsky = new sunskyBackground_t(dir, turb, av, bv, cv, dv, ev, power);
 
 	if(bgl)
@@ -234,14 +234,14 @@ background_t *sunskyBackground_t::factory(paraMap_t &params,renderEnvironment_t 
 		paraMap_t bgp;
 		bgp["type"] = std::string("bglight");
 		bgp["samples"] = bgl_samples;
-		
+
 		light_t *bglight = render.createLight("sunsky_bgLight", bgp);
-		
+
 		bglight->setBackground(new_sunsky);
-		
+
 		if(bglight) render.getScene()->addLight(bglight);
 	}
-	
+
 	if (add_sun)
 	{
 		color_t suncol = ComputeAttenuatedSunlight(fAcos(std::fabs(dir.z)), turb);//(*new_sunsky)(vector3d_t(dir.x, dir.y, dir.z));
@@ -251,25 +251,25 @@ background_t *sunskyBackground_t::factory(paraMap_t &params,renderEnvironment_t 
 		suncol *= invpdf * power;
 
 		Y_INFO << "Sunsky: sun color = " << suncol << yendl;
-		
+
 		paraMap_t p;
 		p["type"] = std::string("sunlight");
 		p["direction"] = point3d_t(dir[0], dir[1], dir[2]);
 		p["color"] = suncol;
 		p["angle"] = parameter_t(angle);
 		p["power"] = parameter_t(pw);
-		
+
 		light_t *light = render.createLight("sunsky_SUN", p);
-		
+
 		if(light) render.getScene()->addLight(light);
 	}
-	
+
 	return new_sunsky;
 }
 
 extern "C"
 {
-	
+
 YAFRAYPLUGIN_EXPORT void registerPlugin(renderEnvironment_t &render)
 {
 	render.registerFactory("sunsky",sunskyBackground_t::factory);

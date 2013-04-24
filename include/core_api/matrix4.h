@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * 			matrix4.h: Transformation matrix api 
+ * 			matrix4.h: Transformation matrix api
  *      This is part of the yafray package
  *      Copyright (C) 2002  Alejandro Conty Estévez
  *
@@ -17,7 +17,7 @@
  *      You should have received a copy of the GNU Lesser General Public
  *      License along with this library; if not, write to the Free Software
  *      Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *      
+ *
  */
 #ifndef __MATRIX4_H
 #define __MATRIX4_H
@@ -34,7 +34,7 @@ class YAFRAYCORE_EXPORT matrix4x4_t
 {
 public:
 	matrix4x4_t() {};
-	matrix4x4_t(const PFLOAT init);
+	matrix4x4_t(const float init);
 	matrix4x4_t(const matrix4x4_t & source);
 	matrix4x4_t(const float source[4][4]);
 	matrix4x4_t(const double source[4][4]);
@@ -44,19 +44,19 @@ public:
 	matrix4x4_t & inverse();
 	matrix4x4_t & transpose();
 	void identity();
-	void translate(PFLOAT dx,PFLOAT dy,PFLOAT dz);
-	void rotateX(PFLOAT degrees);
-	void rotateY(PFLOAT degrees);
-	void rotateZ(PFLOAT degrees);
-	void scale(PFLOAT sx, PFLOAT sy, PFLOAT sz);
+	void translate(float dx,float dy,float dz);
+	void rotateX(float degrees);
+	void rotateY(float degrees);
+	void rotateZ(float degrees);
+	void scale(float sx, float sy, float sz);
 	int invalid() const { return _invalid; }
-	const PFLOAT * operator [] (int i) const { return matrix[i]; }
-	PFLOAT * operator [] (int i) { return matrix[i]; }
+	const float * operator [] (int i) const { return matrix[i]; }
+	float * operator [] (int i) { return matrix[i]; }
 	void setVal(int row, int col, float val)
 	{
 		matrix[row][col] = val;
 	}
-	
+
 	float getVal(int row, int col)
 	{
 		return matrix[row][col];
@@ -64,14 +64,14 @@ public:
 
 protected:
 
-	PFLOAT  matrix[4][4];
+	float  matrix[4][4];
 	int _invalid;
 };
 
 inline matrix4x4_t  operator * (const matrix4x4_t &a,const matrix4x4_t &b)
 {
 	matrix4x4_t aux;
-	
+
 	for(int i=0;i<4;i++)
 		for(int k=0;k<4;k++)
 		{

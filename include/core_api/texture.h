@@ -59,17 +59,17 @@ inline void spheremap(const point3d_t &p, PFLOAT &u, PFLOAT &v)
 	float sqrtRPhi = p.x*p.x + p.y*p.y;
 	float sqrtRTheta = sqrtRPhi + p.z*p.z;
 	float phiRatio;
-	
+
 	u = 0.f;
 	v = 0.f;
-	
+
 	if(sqrtRPhi > 0.f)
 	{
 		if(p.y < 0.f) phiRatio = (M_2PI - fAcos(p.x / fSqrt(sqrtRPhi))) * M_1_2PI;
 		else		  phiRatio = fAcos(p.x / fSqrt(sqrtRPhi)) * M_1_2PI;
 		u = 1.f - phiRatio;
 	}
-	
+
 	v = 1.f - (fAcos(p.z / fSqrt(sqrtRTheta)) * M_1_PI);
 }
 

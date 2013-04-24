@@ -13,7 +13,7 @@ const int prims[50] = {   1,   2,   3,   5,   7,  11,  13,  17,  19,  23,
 					     71,  73,  79,  83,  89,  97, 101, 103, 107, 109,
 					    113, 127, 131, 137, 139, 149, 151, 157, 163, 167,
 					    173, 179, 181, 191, 193, 197, 199, 211, 223, 227  };
-					    
+
 const double invPrims[50] = { 1.000000000,0.500000000,0.333333333,0.200000000,0.142857143,
 							  0.090909091,0.076923077,0.058823529,0.052631579,0.043478261,
 							  0.034482759,0.032258065,0.027027027,0.024390244,0.023255814,
@@ -36,7 +36,7 @@ inline double scrHalton(int dim, unsigned int n)
 		const int *sigma = faure[dim];
 		unsigned int base = prims[dim];
 		double f, factor, dn = (double)n;
-		
+
 		f = factor = invPrims[dim];
 		while (n>0) {
 			value += double(sigma[n % base]) * factor;
@@ -49,7 +49,7 @@ inline double scrHalton(int dim, unsigned int n)
 	{
 		value = (double)ourRandom();
 	}
-	return value;
+	return std::max(0.0, std::min(1.0, value));
 }
 
 __END_YAFRAY

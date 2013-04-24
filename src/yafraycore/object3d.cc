@@ -11,7 +11,7 @@ triangleObject_t::triangleObject_t(int ntris, bool hasUV, bool hasOrco):
 	{
 		uv_offsets.reserve(ntris);
 	}
-	
+
 	if(hasOrco)
 	{
 		points.reserve(2 * 3 * ntris);
@@ -42,7 +42,7 @@ void triangleObject_t::finish()
 {
 	for(std::vector<triangle_t>::iterator i=triangles.begin(); i!= triangles.end(); ++i)
 	{
-		(*i).recNormal();
+		i->recNormal();
 	}
 }
 
@@ -60,7 +60,7 @@ triangleObjectInstance_t::triangleObjectInstance_t(triangleObject_t *base, matri
 	is_base_mesh = false;
 
 	triangles.reserve(mBase->triangles.size());
-	
+
 	for(size_t i = 0; i < mBase->triangles.size(); i++)
 	{
 		triangles.push_back(triangleInstance_t(&mBase->triangles[i], this));
@@ -125,7 +125,7 @@ void meshObject_t::finish()
 {
 	for(std::vector<vTriangle_t>::iterator i=triangles.begin(); i!= triangles.end(); ++i)
 	{
-		(*i).recNormal();
+		i->recNormal();
 	}
 }
 

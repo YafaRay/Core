@@ -20,8 +20,8 @@ option(WITH_OSX_ADDON "Enable the use of blender's included python lib on OSX pl
 option(BUILDRELEASE "Enable release mode building of YafaRay" OFF)
 option(DEBUG_BUILD "Enable debug build mode" OFF)
 option(EMBED_FONT_QT "Embed font for QT GUI (usefull for some buggy QT installations)" OFF)
-option(FAST_MATH "Enable mathematic approximations to make code faster" OFF)
-option(FAST_TRIG "Enable trigonometric approximations to make code faster" OFF)
+option(FAST_MATH "Enable mathematic approximations to make code faster" ON)
+option(FAST_TRIG "Enable trigonometric approximations to make code faster" ON)
 
 ###### Packages and Definitions #########
 
@@ -304,6 +304,8 @@ if (FAST_TRIG)
 endif (FAST_TRIG)
 
 # Adding subdirectories
+set(dir include)
+file (GLOB_RECURSE headers "${dir}/*.h")
 
 add_subdirectory(src)
 

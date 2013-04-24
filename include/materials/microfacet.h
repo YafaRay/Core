@@ -12,30 +12,29 @@ __BEGIN_YAFRAY
 #define TANGENT_V 2
 #define RAW_VMAP 3
 
-#define DIFFUSE_RATIO 1.21739130434782608696 // (28 / 23)
-#define pdfDivisor(cos) ( 8.f * (cos * 0.99f + 0.01f) )
-#define ASDivisor(cos1, cosI, cosO) ( 8.f * (cos1 * std::max(cosI, cosO) * 0.99f + 0.01f) )
+#define DIFFUSE_RATIO 0.387507688 //1.21739130434782608696 // (28 / 23)
+#define pdfDivisor(cos) ( 8.f * M_PI * (cos * 0.99f + 0.04f) )
+#define ASDivisor(cos1, cosI, cosO) ( 8.f * M_PI * ((cos1 * std::max(cosI, cosO)) * 0.99f + 0.04f) )
 
 inline void sample_quadrant_aniso(vector3d_t &H, float s1, float s2, float e_u, float e_v)
 {
-	float phi = atan(fSqrt((e_u + 1.f)/(e_v + 1.f)) * fTan(M_PI_2 * s1));
+	float phi = atan(fSqrt((e_u + 1.f)/(e_v + 1.f)) * tanf(M_PI_2 * s1));
 	float cosPhi = fCos(phi);
-	float sinPhi;
+	float sinPhi = fSin(phi);
 	float cosTheta, sinTheta;
 	float cosPhi2 = cosPhi*cosPhi;
 	float sinPhi2 = 1.f - cosPhi2;
-	
+
 	cosTheta = fPow(1.f - s2, 1.f / (e_u*cosPhi2 + e_v*sinPhi2 + 1.f));
 	sinTheta = fSqrt(1.f - cosTheta*cosTheta);
-	sinPhi = fSqrt(sinPhi2);
-	
+
 	H = vector3d_t(sinTheta * cosPhi, sinTheta * sinPhi, cosTheta);
 }
 
 inline float AS_Aniso_D(vector3d_t h, float e_u, float e_v)
 {
 	if(h.z <= 0.f) return 0.f;
-	float exponent = (e_u * h.x*h.x + e_v * h.y*h.y)/(1.f - h.z*h.z);
+	float exponent = (e_u * h.x*h.x + e_v * h.y*h.y)/(1.00001f - h.z*h.z);
 	return fSqrt( (e_u + 1.f)*(e_v + 1.f) ) * fPow(std::max(0.f, h.z), exponent);
 }
 
@@ -70,7 +69,7 @@ inline void AS_Aniso_Sample(vector3d_t &H, float s1, float s2, float e_u, float 
 
 inline float Blinn_D(float cos_h, float e)
 {
-	return (e + 1.f) * fPow(std::max(0.f, cos_h), e);
+	return (e + 1.f) * fPow(cos_h, e);
 }
 
 inline float Blinn_Pdf(float costheta, float cos_w_H, float e)
@@ -81,7 +80,7 @@ inline float Blinn_Pdf(float costheta, float cos_w_H, float e)
 inline void Blinn_Sample(vector3d_t &H, float s1, float s2, float exponent)
 {
 	// Compute sampled half-angle vector H for Blinn distribution
-	float cosTheta = fPow(s2, 1.f / (exponent + 1.f));
+	float cosTheta = fPow(1.f - s2, 1.f / (exponent + 1.f));
 	float sinTheta = fSqrt(1.f - cosTheta*cosTheta);
 	float phi = s1 * M_2PI;
 	H = vector3d_t(sinTheta*fCos(phi), sinTheta*fSin(phi), cosTheta);
@@ -94,11 +93,11 @@ inline void GGX_Sample(vector3d_t &H, float alpha2, float s1, float s2)
 {
 	// using the flollowing identity:
 	// cosTheta == 1 / sqrt(1 + tanTheta2)
-	float tanTheta2 = alpha2 * (s1 / ((1.f - s1) * 0.99f + 0.01f));
+	float tanTheta2 = alpha2 * (s1 / (1.00001f - s1));
 	float cosTheta = 1.f / fSqrt(1.f + tanTheta2);
-	float sinTheta  = fSqrt(1 - (cosTheta*cosTheta));
+	float sinTheta  = fSqrt(1.00001f - (cosTheta*cosTheta));
 	float phi = M_2PI * s2;
-	
+
 	H = vector3d_t(sinTheta*fCos(phi), sinTheta*fSin(phi), cosTheta);
 }
 
@@ -152,7 +151,7 @@ inline bool refractMicrofacet(float eta, const vector3d_t &wo, vector3d_t &wi, c
 	if(t1 < 0.f) return false;
 	wi = eta * wo + (eta * c - sign * fSqrt(t1)) * H;
 	wi = -wi;
-	
+
 	Kr = 0.f;
 	Kt = 0.f;
 	Kr = microfacetFresnel(woH, 1.f / eta);
@@ -176,7 +175,7 @@ inline float SchlickFresnel(PFLOAT costheta, PFLOAT R)
 
 inline color_t diffuseReflect(float wiN, float woN, float mGlossy, float mDiffuse, const color_t &diff_base)
 {
-	float temp = 0.f;		
+	float temp = 0.f;
 	float f_wi = (1.f - (0.5f * wiN));
 	temp = f_wi * f_wi;
 	f_wi = temp * temp * f_wi;

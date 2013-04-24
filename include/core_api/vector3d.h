@@ -1,6 +1,6 @@
 /****************************************************************************
  *
- * 			vector3d.h: Vector 3d and point representation and manipulation api 
+ * 			vector3d.h: Vector 3d and point representation and manipulation api
  *      This is part of the yafray package
  *      Copyright (C) 2002 Alejandro Conty Estevez
  *
@@ -17,7 +17,7 @@
  *      You should have received a copy of the GNU Lesser General Public
  *      License along with this library; if not, write to the Free Software
  *      Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *      
+ *
  */
 #ifndef Y_VECTOR3D_H
 #define Y_VECTOR3D_H
@@ -58,7 +58,7 @@ class YAFRAYCORE_EXPORT vector3d_t
 		vector3d_t(const vector3d_t &s): x(s.x), y(s.y), z(s.z) { }
 		explicit vector3d_t(const normal_t &n);
 		explicit vector3d_t(const point3d_t &p);
-		
+
 		void set(PFLOAT ix, PFLOAT iy, PFLOAT iz=0) { x=ix;  y=iy;  z=iz; }
 		vector3d_t& normalize();
 		vector3d_t& reflect(const vector3d_t &n);
@@ -86,6 +86,7 @@ class YAFRAYCORE_EXPORT vector3d_t
 		PFLOAT length() const;
 		PFLOAT lengthSqr() const{ return x*x+y*y+z*z; }
 		bool null()const { return ((x==0) && (y==0) && (z==0)); }
+		float sinFromVectors(const vector3d_t &v);
 		vector3d_t& operator = (const vector3d_t &s) { x=s.x;  y=s.y;  z=s.z;  return *this;}
 		vector3d_t& operator +=(const vector3d_t &s) { x+=s.x;  y+=s.y;  z+=s.z;  return *this;}
 		vector3d_t& operator -=(const vector3d_t &s) { x-=s.x;  y-=s.y;  z-=s.z;  return *this;}
@@ -103,7 +104,9 @@ class YAFRAYCORE_EXPORT normal_t
 		normal_t(){};
 		normal_t(GFLOAT nx, GFLOAT ny, GFLOAT nz): x(nx), y(ny), z(nz){}
 		explicit normal_t(const vector3d_t &v): x(v.x), y(v.y), z(v.z) { }
+		normal_t& normalize();
 		normal_t& operator = (const vector3d_t &v){ x=v.x, y=v.y, z=v.z; return *this; }
+		normal_t& operator +=(const vector3d_t &s) { x+=s.x;  y+=s.y;  z+=s.z;  return *this; }
 		GFLOAT x, y, z;
 };
 
@@ -218,6 +221,12 @@ inline point3d_t  operator + ( const point3d_t &a,const vector3d_t &b)
 	return point3d_t(a.x+b.x,a.y+b.y,a.z+b.z);
 }
 
+inline normal_t operator + ( const normal_t &a,const vector3d_t &b)
+{
+	return normal_t(a.x+b.x,a.y+b.y,a.z+b.z);
+}
+
+
 inline bool  operator == ( const point3d_t &a,const point3d_t &b)
 {
 	return ((a.x==b.x) && (a.y==b.y) && (a.z==b.z));
@@ -237,6 +246,26 @@ inline PFLOAT vector3d_t::length()const
 }
 
 inline vector3d_t& vector3d_t::normalize()
+{
+	PFLOAT len = x*x + y*y + z*z;
+	if (len!=0)
+	{
+		len = 1.0/fSqrt(len);
+		x *= len;
+		y *= len;
+		z *= len;
+	}
+	return *this;
+}
+
+
+inline float vector3d_t::sinFromVectors(const vector3d_t& v)
+{
+    float div = ( length() * v.length() ) * 0.99999f + 0.00001f;
+    return asin( ( (*this ^ v ).length() / div) * 0.99999f );
+}
+
+inline normal_t& normal_t::normalize()
 {
 	PFLOAT len = x*x + y*y + z*z;
 	if (len!=0)

@@ -17,7 +17,7 @@
  *      License along with this library; if not, write to the Free Software
  *      Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
  */
- 
+
 #include <yafray_config.h>
 #include <yafraycore/nodematerial.h>
 #include <core_api/environment.h>
@@ -36,15 +36,15 @@ class glossyMat_t: public nodeMaterial_t
 		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const;
 		virtual float pdf(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wi, BSDF_t bsdfs)const;
 		static material_t* factory(paraMap_t &, std::list< paraMap_t > &, renderEnvironment_t &);
-		
+
 		struct MDat_t
 		{
 			float mDiffuse, mGlossy, pDiffuse;
 			void *stack;
 		};
-		
+
 		void initOrenNayar(double sigma);
-		
+
 	private:
 		float OrenNayar(const vector3d_t &wi, const vector3d_t &wo, const vector3d_t &N) const;
 
@@ -67,7 +67,7 @@ glossyMat_t::glossyMat_t(const color_t &col, const color_t &dcol, float reflect,
 			reflectivity(reflect), mDiffuse(diff), as_diffuse(as_diff), with_diffuse(false), anisotropic(false)
 {
 	bsdfFlags = BSDF_NONE;
-	
+
 	if(diff > 0)
 	{
 		bsdfFlags = BSDF_DIFFUSE | BSDF_REFLECT;
@@ -85,7 +85,7 @@ void glossyMat_t::initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_
 	dat->stack = (char*)state.userdata + sizeof(MDat_t);
 	nodeStack_t stack(dat->stack);
 	if(bumpS) evalBump(stack, state, sp, bumpS);
-	
+
 	std::vector<shaderNode_t *>::const_iterator iter, end=allViewindep.end();
 	for(iter = allViewindep.begin(); iter!=end; ++iter) (*iter)->eval(stack, state, sp);
 	bsdfTypes=bsdfFlags;
@@ -107,16 +107,16 @@ float glossyMat_t::OrenNayar(const vector3d_t &wi, const vector3d_t &wo, const v
 	float cos_ti = std::max(-1.f,std::min(1.f,N*wi));
 	float cos_to = std::max(-1.f,std::min(1.f,N*wo));
 	float maxcos_f = 0.f;
-	
+
 	if(cos_ti < 0.9999f && cos_to < 0.9999f)
 	{
 		vector3d_t v1 = (wi - N*cos_ti).normalize();
 		vector3d_t v2 = (wo - N*cos_to).normalize();
 		maxcos_f = std::max(0.f, v1*v2);
 	}
-	
+
 	float sin_alpha, tan_beta;
-	
+
 	if(cos_to >= cos_ti)
 	{
 		sin_alpha = fSqrt(1.f - cos_ti*cos_ti);
@@ -127,7 +127,7 @@ float glossyMat_t::OrenNayar(const vector3d_t &wi, const vector3d_t &wo, const v
 		sin_alpha = fSqrt(1.f - cos_to*cos_to);
 		tan_beta = fSqrt(1.f - cos_ti*cos_ti) / ((cos_ti == 0.f)?1e-8f:cos_ti); // white (black on windows) dots fix for oren-nayar, could happen with bad normals
 	}
-	
+
 	return orenA + orenB * maxcos_f * sin_alpha * tan_beta;
 }
 
@@ -138,14 +138,14 @@ color_t glossyMat_t::eval(const renderState_t &state, const surfacePoint_t &sp, 
 	MDat_t *dat = (MDat_t *)state.userdata;
 	color_t col(0.f);
 	bool diffuse_flag = bsdfs & BSDF_DIFFUSE;
-	
+
 	nodeStack_t stack(dat->stack);
 	vector3d_t N = FACE_FORWARD(sp.Ng, sp.N, wo);
 
 	float wiN = std::fabs(wi * N);
 	float woN = std::fabs(wo * N);
-	
-	
+
+
 	if( (as_diffuse && diffuse_flag) || (!as_diffuse && (bsdfs & BSDF_GLOSSY)) )
 	{
 		vector3d_t H = (wo + wi).normalize(); // half-angle
@@ -168,9 +168,9 @@ color_t glossyMat_t::eval(const renderState_t &state, const surfacePoint_t &sp, 
 
 	if(with_diffuse && diffuse_flag)
 	{
-		col += diffuseReflect(wiN, woN, dat->mGlossy, dat->mDiffuse, (diffuseS ? diffuseS->getColor(stack) : diff_color)) * ((orenNayar)?OrenNayar(wi, wo, N):1.f);
+		col += dat->mDiffuse * (1.f - dat->mGlossy) * (diffuseS ? diffuseS->getColor(stack) : diff_color) * ((orenNayar)?OrenNayar(wi, wo, N):1.f);//diffuseReflect(wiN, woN, dat->mGlossy, dat->mDiffuse, (diffuseS ? diffuseS->getColor(stack) : diff_color)) * ((orenNayar)?OrenNayar(wi, wo, N):1.f);
 	}
-	
+
 	return col;
 }
 
@@ -186,7 +186,7 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 	float wiN = 0.f;
 	float woN = std::fabs(wo * N);
 	float cos_wo_H = 0.f;
-	
+
 	color_t scolor(0.f);
 
 	float s1 = s.s1;
@@ -195,7 +195,7 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 	bool use_diffuse = with_diffuse && (s.flags & BSDF_DIFFUSE);
 	nodeStack_t stack(dat->stack);
 	float glossy = 0.f;
-	
+
 	if(use_diffuse)
 	{
 		float s_pDiffuse = use_glossy ? cur_pDiffuse : 1.f;
@@ -244,7 +244,7 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 		s1 -= cur_pDiffuse;
 		s1 /= (1.f - cur_pDiffuse);
 	}
-	
+
 	if(use_glossy)
 	{
 		if(anisotropic)
@@ -260,9 +260,9 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 			// Compute incident direction by reflecting wo about H
 			wi = reflect_dir(H, wo);
 			cos_Ng_wi = sp.Ng*wi;
-			
+
 			if(cos_Ng_wo*cos_Ng_wi < 0.f) return color_t(0.f);
-			
+
 			wiN = std::fabs(wi * N);
 
 			s.pdf = AS_Aniso_Pdf(Hs, cos_wo_H, exp_u, exp_v);
@@ -281,16 +281,16 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 			// Compute incident direction by reflecting wo about H
 			wi = reflect_dir(H, wo);
 			cos_Ng_wi = sp.Ng*wi;
-			
+
 			if(cos_Ng_wo*cos_Ng_wi < 0.f) return color_t(0.f);
-			
+
 			wiN = std::fabs(wi * N);
 			float cosHN = H*N;
 
 			s.pdf = Blinn_Pdf(cosHN, cos_wo_H, exponent);
 			glossy = Blinn_D(cosHN, exponent) * SchlickFresnel(cos_wo_H, dat->mGlossy)  / ASDivisor(cos_wo_H, woN, wiN);
 		}
-		
+
 		scolor = glossy * (glossyS ? glossyS->getColor(stack) : gloss_color);
 		s.sampledFlags = as_diffuse ? BSDF_DIFFUSE | BSDF_REFLECT : BSDF_GLOSSY | BSDF_REFLECT;
 	}
@@ -302,7 +302,7 @@ color_t glossyMat_t::sample(const renderState_t &state, const surfacePoint_t &sp
 	}
 
 	W = wiN / (s.pdf*0.99f + 0.01f);
-	
+
 	return scolor;
 }
 
@@ -314,11 +314,11 @@ float glossyMat_t::pdf(const renderState_t &state, const surfacePoint_t &sp, con
 	float pdf = 0.f;
 	float cos_wo_H = 0.f;
 	float cos_N_H = 0.f;
-	
+
 	float cur_pDiffuse = dat->pDiffuse;
 	bool use_glossy = as_diffuse ? (flags & BSDF_DIFFUSE) : (flags & BSDF_GLOSSY);
 	bool use_diffuse = with_diffuse && (flags & BSDF_DIFFUSE);
-	
+
 	if(use_diffuse)
 	{
 		pdf = std::fabs(wi*N);
@@ -336,7 +336,7 @@ float glossyMat_t::pdf(const renderState_t &state, const surfacePoint_t &sp, con
 		}
 		return pdf;
 	}
-	
+
 	if(use_glossy)
 	{
 		vector3d_t H = (wi+wo).normalize();
@@ -369,7 +369,7 @@ material_t* glossyMat_t::factory(paraMap_t &params, std::list< paraMap_t > &para
 	params.getParam("exponent", exponent);
 	params.getParam("anisotropic", aniso);
 	glossyMat_t *mat = new glossyMat_t(col, dcol , refl, diff, exponent, as_diff);
-	
+
 	if(aniso)
 	{
 		float e_u=50.0, e_v=50.0;
@@ -379,7 +379,7 @@ material_t* glossyMat_t::factory(paraMap_t &params, std::list< paraMap_t > &para
 		mat->exp_u = e_u;
 		mat->exp_v = e_v;
 	}
-	
+
 	if(params.getParam("diffuse_brdf", name))
 	{
 		if(*name == "Oren-Nayar")
@@ -389,16 +389,16 @@ material_t* glossyMat_t::factory(paraMap_t &params, std::list< paraMap_t > &para
 			mat->initOrenNayar(sigma);
 		}
 	}
-	
+
 	std::vector<shaderNode_t *> roots;
 	std::map<std::string, shaderNode_t *> nodeList;
-	
+
 	// Prepare our node list
 	nodeList["diffuse_shader"] = NULL;
 	nodeList["glossy_shader"] = NULL;
 	nodeList["glossy_reflect_shader"] = NULL;
 	nodeList["bump_shader"] = NULL;
-	
+
 	if(mat->loadNodes(paramList, render))
 	{
         mat->parseNodes(params, roots, nodeList);
@@ -424,14 +424,14 @@ material_t* glossyMat_t::factory(paraMap_t &params, std::list< paraMap_t > &para
 		mat->filterNodes(colorNodes, mat->allViewindep, VIEW_INDEP);
 		if(mat->bumpS) mat->getNodeList(mat->bumpS, mat->bumpNodes);
 	}
-	
+
 	mat->reqMem = mat->reqNodeMem + sizeof(MDat_t);
-	
+
 	return mat;
 }
 
 extern "C"
-{	
+{
 	YAFRAYPLUGIN_EXPORT void registerPlugin(renderEnvironment_t &render)
 	{
 		render.registerFactory("glossy", glossyMat_t::factory);

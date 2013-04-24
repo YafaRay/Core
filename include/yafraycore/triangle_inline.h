@@ -12,35 +12,37 @@ inline bool triangle_t::intersect(const ray_t &ray, float *t, intersectData_t &d
 	// Tomas Möller and Ben Trumbore ray intersection scheme
 	// Getting the barycentric coordinates of the hit point
     // const point3d_t &a=mesh->points[pa], &b=mesh->points[pb], &c=mesh->points[pc];
+	vector3d_t edge1, edge2, tvec, pvec, qvec;
+	float det, inv_det, u, v;
 
     point3d_t const& a = mesh->getVertex(pa);
     point3d_t const& b = mesh->getVertex(pb);
     point3d_t const& c = mesh->getVertex(pc);
-    
-	vector3d_t edge1, edge2, tvec, pvec, qvec;
-	float det, inv_det, u, v;
+
 	edge1 = b - a;
 	edge2 = c - a;
+
 	pvec = ray.dir ^ edge2;
 	det = edge1 * pvec;
-	
+
 	if(det == 0.0) return false;
-	
+
 	inv_det = 1.0 / det;
 	tvec = ray.from - a;
 	u = (tvec*pvec) * inv_det;
-	
+
 	if (u < 0.0 || u > 1.0) return false;
-	
+
 	qvec = tvec^edge1;
 	v = (ray.dir*qvec) * inv_det;
-	
+
 	if ((v<0.0) || ((u+v)>1.0) ) return false;
-	
+
 	*t = edge2 * qvec * inv_det;
 
 	data.b1 = u;
 	data.b2 = v;
+	data.b0 = 1 - u - v;
 	return true;
 }
 
@@ -93,34 +95,37 @@ inline bool triangleInstance_t::intersect(const ray_t &ray, float *t, intersectD
 {
 	// Tomas Möller and Ben Trumbore ray intersection scheme
 	// Getting the barycentric coordinates of the hit point
+	vector3d_t edge1, edge2, tvec, pvec, qvec;
+	float det, inv_det, u, v;
+
     point3d_t const& a = mesh->getVertex(mBase->pa);
     point3d_t const& b = mesh->getVertex(mBase->pb);
     point3d_t const& c = mesh->getVertex(mBase->pc);
-    
-	vector3d_t edge1, edge2, tvec, pvec, qvec;
-	float det, inv_det, u, v;
+
 	edge1 = b - a;
 	edge2 = c - a;
+
 	pvec = ray.dir ^ edge2;
 	det = edge1 * pvec;
-	
+
 	if(det == 0.0) return false;
-	
+
 	inv_det = 1.0 / det;
 	tvec = ray.from - a;
 	u = (tvec*pvec) * inv_det;
-	
+
 	if (u < 0.0 || u > 1.0) return false;
-	
+
 	qvec = tvec^edge1;
 	v = (ray.dir*qvec) * inv_det;
-	
+
 	if ((v<0.0) || ((u+v)>1.0) ) return false;
-	
+
 	*t = edge2 * qvec * inv_det;
 
 	data.b1 = u;
 	data.b2 = v;
+	data.b0 = 1 - u - v;
 	return true;
 }
 

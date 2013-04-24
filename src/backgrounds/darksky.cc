@@ -125,7 +125,7 @@ darkSkyBackground_t::darkSkyBackground_t(const point3d_t dir, float turb, float 
 	perez_y[3] = ((-0.04405 * T) - 1.65369);
 	perez_y[4] = ((-0.01092 * T) + 0.05291);
 	perez_y[5] = prePerez(perez_y);
-};
+}
 
 color_t darkSkyBackground_t::getAttenuatedSunColor()
 {
@@ -181,10 +181,10 @@ color_t darkSkyBackground_t::getSunColorFromSunRad()
 		Gas = fExp((-1.41 * kgLm) / fPow(1 + 118.93 * kgLm, 0.45));
 		Water = fExp((-0.2385 * kwaLmw) / fPow(1 + 20.07 * kwaLmw, 0.45));
 		spdf = sunRadianceCurve(L) * Rayleigh * Angstrom * Ozone * Gas * Water;
-		sXYZ += chromaMatch(L) * spdf;
+		sXYZ += chromaMatch(L) * spdf * 0.013513514;
 	}
 
-	return convert.fromXYZ(sXYZ, true) * 0.013513514;
+	return convert.fromXYZ(sXYZ, true);
 }
 
 darkSkyBackground_t::~darkSkyBackground_t()

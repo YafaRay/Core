@@ -9,24 +9,20 @@ int triPlaneClip(double pos, int axis, bool lower, bound_t &box, void* o_dat, vo
 inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
 {
 	sp.Ng = getNormal();
-	data.calcB0();
 
 	float u = data.b0, v = data.b1, w = data.b2;
-	
-	if(mesh->is_smooth || mesh->normals_exported)
-	{
-		// assume the smoothed normals exist, if the mesh is smoothed; if they don't, fix this
-		// assert(na > 0 && nb > 0 && nc > 0);
 
-		vector3d_t va = (na > 0) ? mesh->getVertexNormal(na) : sp.Ng;
-		vector3d_t vb = (nb > 0) ? mesh->getVertexNormal(nb) : sp.Ng;
-		vector3d_t vc = (nc > 0) ? mesh->getVertexNormal(nc) : sp.Ng;
+	if(mesh->is_smooth)
+	{
+		vector3d_t va = (na >= 0) ? mesh->getVertexNormal(na) : sp.Ng;
+		vector3d_t vb = (nb >= 0) ? mesh->getVertexNormal(nb) : sp.Ng;
+		vector3d_t vc = (nc >= 0) ? mesh->getVertexNormal(nc) : sp.Ng;
 
 		sp.N = u*va + v*vb + w*vc;
 		sp.N.normalize();
 	}
 	else sp.N = sp.Ng;
-	
+
 	if(mesh->has_orco)
 	{
 		// if the object is an instance, the vertex positions are the orcos
@@ -49,18 +45,18 @@ inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, int
 	point3d_t const& p0 = mesh->getVertex(pa);
 	point3d_t const& p1 = mesh->getVertex(pb);
 	point3d_t const& p2 = mesh->getVertex(pc);
-	
+
 	if(mesh->has_uv)
 	{
 		size_t uvi = selfIndex * 3;
 		const uv_t &uv1 = mesh->uv_values[mesh->uv_offsets[uvi]];
 		const uv_t &uv2 = mesh->uv_values[mesh->uv_offsets[uvi + 1]];
 		const uv_t &uv3 = mesh->uv_values[mesh->uv_offsets[uvi + 2]];
-		
+
 		//eh...u, v and w are actually the barycentric coords, not some UVs...quite annoying, i know...
 		sp.U = u * uv1.u + v * uv2.u + w * uv3.u;
 		sp.V = u * uv1.v + v * uv2.v + w * uv3.v;
-		
+
 		// calculate dPdU and dPdV
 		float du1 = uv1.u - uv3.u;
 		float du2 = uv2.u - uv3.u;
@@ -78,15 +74,16 @@ inline void triangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, int
 		}
 		else
 		{
-			sp.dPdU = p0 - p2;
-			sp.dPdV = p1 - p2;
+			// implicit mapping, p1 = 0/0, p2 = 1/0, p3 = 0/1 => U = u, V = v; (arbitrary choice)
+			sp.dPdU = p1 - p0;
+			sp.dPdV = p2 - p1;
 		}
 	}
 	else
 	{
 		// implicit mapping, p1 = 0/0, p2 = 1/0, p3 = 0/1 => U = u, V = v; (arbitrary choice)
-		sp.dPdU = p0 - p2;
-		sp.dPdV = p1 - p2;
+		sp.dPdU = p1 - p0;
+		sp.dPdV = p2 - p1;
 	}
 
 	sp.dPdU.normalize();
@@ -122,7 +119,7 @@ inline bool triangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipp
 	else // initial clip
 	{
 		WHOOPS:
-		
+
 		double tPoints[3][3];
 
 		point3d_t const& a = mesh->getVertex(pa);
@@ -140,7 +137,7 @@ inline bool triangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipp
 	}
 	return true;
 }
-	
+
 inline float triangle_t::surfaceArea() const
 {
 	point3d_t const& a = mesh->getVertex(pa);
@@ -178,12 +175,10 @@ inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &
 	int nb = mBase->nb;
 	int nc = mBase->nc;
 
-	data.calcB0();
-
 	size_t selfIndex = mBase->selfIndex;
 
 	float u = data.b0, v = data.b1, w = data.b2;
-	
+
 	if(mesh->is_smooth || mesh->normals_exported)
 	{
 		// assume the smoothed normals exist, if the mesh is smoothed; if they don't, fix this
@@ -197,7 +192,7 @@ inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &
 		sp.N.normalize();
 	}
 	else sp.N = sp.Ng;
-	
+
 	if(mesh->has_orco)
 	{
 		// if the object is an instance, the vertex positions are the orcos
@@ -220,18 +215,18 @@ inline void triangleInstance_t::getSurface(surfacePoint_t &sp, const point3d_t &
 	point3d_t const& p0 = mesh->getVertex(pa);
 	point3d_t const& p1 = mesh->getVertex(pb);
 	point3d_t const& p2 = mesh->getVertex(pc);
-	
+
 	if(mesh->has_uv)
 	{
 		size_t uvi = selfIndex * 3;
 		const uv_t &uv1 = mesh->mBase->uv_values[mesh->mBase->uv_offsets[uvi]];
 		const uv_t &uv2 = mesh->mBase->uv_values[mesh->mBase->uv_offsets[uvi + 1]];
 		const uv_t &uv3 = mesh->mBase->uv_values[mesh->mBase->uv_offsets[uvi + 2]];
-		
+
 		//eh...u, v and w are actually the barycentric coords, not some UVs...quite annoying, i know...
 		sp.U = u * uv1.u + v * uv2.u + w * uv3.u;
 		sp.V = u * uv1.v + v * uv2.v + w * uv3.v;
-		
+
 		// calculate dPdU and dPdV
 		float du1 = uv1.u - uv3.u;
 		float du2 = uv2.u - uv3.u;
@@ -334,7 +329,7 @@ inline bool triangleInstance_t::clipToBound(double bound[2][3], int axis, bound_
 	}
 	return true;
 }
-	
+
 inline float triangleInstance_t::surfaceArea() const
 {
 	point3d_t const& a = mesh->getVertex(mBase->pa);
@@ -404,7 +399,6 @@ bound_t vTriangle_t::getBound() const
 void vTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
 {
 	sp.Ng = vector3d_t(normal);
-	data.calcB0();
 	// gives the index in triangle array, according to my latest informations
 	// it _should be_ safe to rely on array-like contiguous memory in std::vector<>!
 	int tri_index= this - &(mesh->triangles.front());
@@ -418,7 +412,7 @@ void vTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersect
 		sp.N.normalize();
 	}
 	else sp.N = vector3d_t(normal);
-	
+
 	if(mesh->has_orco)
 	{
 		sp.orcoP = u*mesh->points[pa+1] + v*mesh->points[pb+1] + w*mesh->points[pc+1];
@@ -439,14 +433,14 @@ void vTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersect
 		//eh...u, v and w are actually the barycentric coords, not some UVs...quite annoying, i know...
 		sp.U = u * it[uvi1].u + v * it[uvi2].u + w * it[uvi3].u;
 		sp.V = u * it[uvi1].v + v * it[uvi2].v + w * it[uvi3].v;
-		
+
 		// calculate dPdU and dPdV
 		float du1 = it[uvi1].u - it[uvi3].u;
 		float du2 = it[uvi2].u - it[uvi3].u;
 		float dv1 = it[uvi1].v - it[uvi3].v;
 		float dv2 = it[uvi2].v - it[uvi3].v;
 		float invdet, det = du1 * dv2 - dv1 * du2;
-		
+
 		if(std::fabs(det) > 1e-30f)
 		{
 			invdet = 1.f/det;
@@ -528,7 +522,7 @@ bool vTriangle_t::clipToBound(double bound[2][3], int axis, bound_t &clipped, vo
 	}
 	return true;
 }
-	
+
 float vTriangle_t::surfaceArea() const
 {
 	const point3d_t &a=mesh->points[pa], &b=mesh->points[pb], &c=mesh->points[pc];
@@ -566,7 +560,7 @@ bool bsTriangle_t::intersect(const ray_t &ray, float *t, intersectData_t &data) 
 	const point3d_t a = b1*an[0] + b2*an[1] + b3*an[2];
 	const point3d_t b = b1*bn[0] + b2*bn[1] + b3*bn[2];
 	const point3d_t c = b1*cn[0] + b2*cn[1] + b3*cn[2];
-	
+
 	vector3d_t edge1, edge2, tvec, pvec, qvec;
 	float det, inv_det, u, v;
 	edge1 = b - a;
@@ -582,7 +576,7 @@ bool bsTriangle_t::intersect(const ray_t &ray, float *t, intersectData_t &data) 
 	v = (ray.dir*qvec) * inv_det;
 	if ((v<0.0) || ((u+v)>1.0) ) return false;
 	*t = edge2 * qvec * inv_det;
-	
+
 	data.b1 = u;
 	data.b1 = v;
 	data.t = ray.time;
@@ -623,7 +617,6 @@ bound_t bsTriangle_t::getBound() const
 
 void bsTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersectData_t &data) const
 {
-	data.calcB0();
 	// recalculating the points is not really the nicest solution...
 	const point3d_t *an=&mesh->points[pa], *bn=&mesh->points[pb], *cn=&mesh->points[pc];
 	float time = data.t;
@@ -632,7 +625,7 @@ void bsTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersec
 	const point3d_t a = b1*an[0] + b2*an[1] + b3*an[2];
 	const point3d_t b = b1*bn[0] + b2*bn[1] + b3*bn[2];
 	const point3d_t c = b1*cn[0] + b2*cn[1] + b3*cn[2];
-	
+
 	sp.Ng = ((b-a)^(c-a)).normalize();
 	// the "u" and "v" in triangle intersection code are actually "v" and "w" when u=>p1, v=>p2, w=>p3
 	float u = data.b0, v = data.b1, w = data.b2;
@@ -645,7 +638,7 @@ void bsTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersec
 		sp.N.normalize();
 	}
 	else  */sp.N = sp.Ng;
-	
+
 	if(mesh->has_orco)
 	{
 		sp.orcoP = u*mesh->points[pa+1] + v*mesh->points[pb+1] + w*mesh->points[pc+1];
@@ -661,7 +654,7 @@ void bsTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersec
 	if(mesh->has_uv)
 	{
 //		static bool test=true;
-		
+
 		// gives the index in triangle array, according to my latest informations
 		// it _should be_ safe to rely on array-like contiguous memory in std::vector<>!
 		unsigned int tri_index= this - &(mesh->s_triangles.front());
@@ -671,14 +664,14 @@ void bsTriangle_t::getSurface(surfacePoint_t &sp, const point3d_t &hit, intersec
 		//eh...u, v and w are actually the barycentric coords, not some UVs...quite annoying, i know...
 		sp.U = u * it[uvi1].u + v * it[uvi2].u + w * it[uvi3].u;
 		sp.V = u * it[uvi1].v + v * it[uvi2].v + w * it[uvi3].v;
-		
+
 		// calculate dPdU and dPdV
 		float du1 = it[uvi1].u - it[uvi3].u;
 		float du2 = it[uvi2].u - it[uvi3].u;
 		float dv1 = it[uvi1].v - it[uvi3].v;
 		float dv2 = it[uvi2].v - it[uvi3].v;
 		float invdet, det = du1 * dv2 - dv1 * du2;
-		
+
 		if(std::fabs(det) > 1e-30f)
 		{
 			invdet = 1.f/det;

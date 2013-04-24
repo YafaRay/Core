@@ -17,7 +17,7 @@
  *      You should have received a copy of the GNU Lesser General Public
  *      License along with this library; if not, write to the Free Software
  *      Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
- *      
+ *
  */
 
 __BEGIN_YAFRAY
@@ -30,7 +30,7 @@ enum tgaImageDataType
 	uncGray,
 	rleColorMap = 9,
 	rleTrueColor,
-	rleGray,
+	rleGray
 };
 
 // TGA image origin corner descriptions
@@ -93,15 +93,15 @@ struct tgaHeader_t
 	yByte idLength;
 	yByte ColorMapType; // 0 or 1 (off or on)
 	yByte imageType; // one of tgaImageDataTypes
-	
+
 // ColorMap desc
-	
+
 	yWord cmFirstEntryIndex; // Used to offset the start of the ColorMap, ie. start at entry 127 out of 256 entries
 	yWord cmNumberOfEntries;
 	yByte cmEntryBitDepth; // 15, 16, 24 or 32
-	
+
 // Image descriptor
-	
+
 	yWord xOrigin; // used for Truevision TARGA display devices (anybody still has one?)
 	yWord yOrigin; // used for Truevision TARGA display devices
 	yWord width; // 0-65535

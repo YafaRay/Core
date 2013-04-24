@@ -145,7 +145,7 @@ imageFilm_t::imageFilm_t (int width, int height, int xstart, int ystart, colorOu
 		default:	ffunc = Box;
 	}
 
-	filterw = std::min(std::max(0.501, filterw), 0.5*MAX_FILTER_SIZE); // filter needs to cover at least the area of one pixel and no more than MAX_FILTER_SIZE/2
+	filterw = std::min(std::max(0.501f, filterw), 0.5f * MAX_FILTER_SIZE); // filter needs to cover at least the area of one pixel and no more than MAX_FILTER_SIZE/2
 
 	for(int y=0; y < FILTER_TABLE_SIZE; ++y)
 	{
