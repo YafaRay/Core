@@ -301,20 +301,25 @@ bool tiledIntegrator_t::renderTile(renderArea_t &a, int n_samples, int offset, b
 
 				if(do_depth)
 				{
+					float depth = 0.f;
+
 					if(normalizedDepth)
                     {
-                        float depth = 0.f;
                         if(c_ray.tmax > 0.f)
                         {
                             depth = 1.f - (c_ray.tmax - minDepth) * maxDepth; // Distance normalization
                         }
-
-                        imageFilm->addDepthSample(0, depth, j, i, dx, dy);
                     }
                     else
                     {
-                        imageFilm->addDepthSample(0, c_ray.tmax, j, i, dx, dy);
+                        depth = c_ray.tmax;
+                        if(depth <= 0.f)
+                        {
+                            depth = 99999997952.f;
+                        }
                     }
+
+                    imageFilm->addDepthSample(0, depth, j, i, dx, dy);
 				}
 			}
 		}
