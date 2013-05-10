@@ -99,24 +99,32 @@ void tiledIntegrator_t::preTile(renderArea_t &a, int n_samples, int offset, bool
 void tiledIntegrator_t::precalcDepths()
 {
 	const camera_t* camera = scene->getCamera();
-	diffRay_t ray;
-	// We sample the scene at render resolution to get the precision required for AA
-	int w = camera->resX();
-	int h = camera->resY();
-	float wt = 0.f; // Dummy variable
-	surfacePoint_t sp;
 
-	for(int i=0; i<h; ++i)
-	{
-		for(int j=0; j<w; ++j)
-		{
-			ray.tmax = -1.f;
-			ray = camera->shootRay(i, j, 0.5f, 0.5f, wt);
-			scene->intersect(ray, sp);
-			if(ray.tmax > maxDepth) maxDepth = ray.tmax;
-			if(ray.tmax < minDepth && ray.tmax >= 0.f) minDepth = ray.tmax;
-		}
-	}
+	if(camera->getFarClip() > -1)
+    {
+        minDepth = camera->getNearClip();
+        maxDepth = camera->getFarClip();
+    }
+    else
+    {
+        diffRay_t ray;
+        // We sample the scene at render resolution to get the precision required for AA
+        int w = camera->resX();
+        int h = camera->resY();
+        float wt = 0.f; // Dummy variable
+        surfacePoint_t sp;
+        for(int i=0; i<h; ++i)
+        {
+            for(int j=0; j<w; ++j)
+            {
+                ray.tmax = -1.f;
+                ray = camera->shootRay(i, j, 0.5f, 0.5f, wt);
+                scene->intersect(ray, sp);
+                if(ray.tmax > maxDepth) maxDepth = ray.tmax;
+                if(ray.tmax < minDepth && ray.tmax >= 0.f) minDepth = ray.tmax;
+            }
+        }
+    }
 	// we use the inverse multiplicative of the value aquired
 	if(maxDepth > 0.f) maxDepth = 1.f / (maxDepth - minDepth);
 }
@@ -142,7 +150,7 @@ bool tiledIntegrator_t::render(imageFilm_t *image)
 	maxDepth = 0.f;
 	minDepth = 1e38f;
 
-	if(scene->doDepth()) precalcDepths();
+	if(scene->doDepth() && scene->normalizedDepth()) precalcDepths();
 
 	preRender();
 
@@ -212,6 +220,7 @@ bool tiledIntegrator_t::renderTile(renderArea_t &a, int n_samples, int offset, b
 	int x;
 	const camera_t* camera = scene->getCamera();
 	bool do_depth = scene->doDepth();
+	bool normalizedDepth = scene->normalizedDepth();
 	x=camera->resX();
 	diffRay_t c_ray;
 	ray_t d_ray;
@@ -292,13 +301,20 @@ bool tiledIntegrator_t::renderTile(renderArea_t &a, int n_samples, int offset, b
 
 				if(do_depth)
 				{
-					float depth = 0.f;
-					if(c_ray.tmax > 0.f)
-					{
-						depth = 1.f - (c_ray.tmax - minDepth) * maxDepth; // Distance normalization
-					}
+					if(normalizedDepth)
+                    {
+                        float depth = 0.f;
+                        if(c_ray.tmax > 0.f)
+                        {
+                            depth = 1.f - (c_ray.tmax - minDepth) * maxDepth; // Distance normalization
+                        }
 
-					imageFilm->addDepthSample(0, depth, j, i, dx, dy);
+                        imageFilm->addDepthSample(0, depth, j, i, dx, dy);
+                    }
+                    else
+                    {
+                        imageFilm->addDepthSample(0, c_ray.tmax, j, i, dx, dy);
+                    }
 				}
 			}
 		}

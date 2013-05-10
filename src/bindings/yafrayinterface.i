@@ -23,7 +23,7 @@ namespace std
 #include <core_api/output.h>
 #include <interface/yafrayinterface.h>
 
-struct yafTilePixel_t
+struct yafTilePixel4_t
 {
 	float r;
 	float g;
@@ -31,16 +31,47 @@ struct yafTilePixel_t
 	float a;
 };
 
-struct YafTileObject_t
+struct yafTilePixel3_t
+{
+	float x;
+	float y;
+	float z;
+};
+
+struct yafTilePixel1_t
+{
+	float v;
+};
+
+struct YafTile4Object_t
 {
 	PyObject_HEAD
 	int resx, resy;
 	int x0, x1, y0, y1;
 	int w, h;
-	yafTilePixel_t *mem;
+	yafTilePixel4_t *mem;
 };
 
-static Py_ssize_t yaf_tile_length(YafTileObject_t *self)
+struct YafTile3Object_t
+{
+	PyObject_HEAD
+	int resx, resy;
+	int x0, x1, y0, y1;
+	int w, h;
+	yafTilePixel3_t *mem;
+};
+
+struct YafTile1Object_t
+{
+	PyObject_HEAD
+	int resx, resy;
+	int x0, x1, y0, y1;
+	int w, h;
+	yafTilePixel1_t *mem;
+};
+
+
+static Py_ssize_t yaf_tile_4_length(YafTile4Object_t *self)
 {
 	self->w = (self->x1 - self->x0);
 	self->h = (self->y1 - self->y0);
@@ -48,11 +79,11 @@ static Py_ssize_t yaf_tile_length(YafTileObject_t *self)
 	return self->w * self->h;
 }
 
-static PyObject *yaf_tile_subscript_int(YafTileObject_t *self, int keynum)
+static PyObject *yaf_tile_4_subscript_int(YafTile4Object_t *self, int keynum)
 {
 	// Check boundaries and fill w and h
-	if (keynum >= yaf_tile_length(self) || keynum < 0)
-		return Py_BuildValue("ffff", 1, 0, 0, 1);
+	if (keynum >= yaf_tile_4_length(self) || keynum < 0)
+		return Py_BuildValue("[f,f,f,f]", 1, 0, 0, 1);
 
 	// Calc position of the tile in the image region
 	int vy = keynum / self->w;
@@ -63,38 +94,170 @@ static PyObject *yaf_tile_subscript_int(YafTileObject_t *self, int keynum)
 	vy = (self->y0 + self->h - 1) - vy;
 
 	// Get pixel
-	yafTilePixel_t &pix = self->mem[ self->resx * vy + vx ];
+	yafTilePixel4_t &pix = self->mem[ self->resx * vy + vx ];
 
-	return Py_BuildValue("ffff", pix.r, pix.g, pix.b, pix.a);
+	return Py_BuildValue("[f,f,f,f]", pix.r, pix.g, pix.b, pix.a);
 }
 
-static void yaf_tile_dealloc(YafTileObject_t *self)
+static void yaf_tile_4_dealloc(YafTile4Object_t *self)
 {
 	PyObject_Del(self);
 }
 
-PySequenceMethods sequence_methods =
+PySequenceMethods sequence_methods_4 =
 {
-	( lenfunc ) yaf_tile_length,
+	( lenfunc ) yaf_tile_4_length,
 	NULL,
 	NULL,
-	( ssizeargfunc ) yaf_tile_subscript_int
+	( ssizeargfunc ) yaf_tile_4_subscript_int
 };
 
-PyTypeObject yafTile_Type =
+PyTypeObject yafTile4_Type =
 {
 	PyVarObject_HEAD_INIT(NULL, 0)
-	"yaf_tile",							/* tp_name */
-	sizeof(YafTileObject_t),			/* tp_basicsize */
+	"yaf_tile_4",							/* tp_name */
+	sizeof(YafTile4Object_t),			/* tp_basicsize */
 	0,									/* tp_itemsize */
-	( destructor ) yaf_tile_dealloc,	/* tp_dealloc */
+	( destructor ) yaf_tile_4_dealloc,	/* tp_dealloc */
 	NULL,                       		/* printfunc tp_print; */
 	NULL,								/* getattrfunc tp_getattr; */
 	NULL,								/* setattrfunc tp_setattr; */
 	NULL,								/* tp_compare */ /* DEPRECATED in python 3.0! */
 	NULL,								/* tp_repr */
 	NULL,                       		/* PyNumberMethods *tp_as_number; */
-	&sequence_methods,					/* PySequenceMethods *tp_as_sequence; */
+	&sequence_methods_4,					/* PySequenceMethods *tp_as_sequence; */
+	NULL,								/* PyMappingMethods *tp_as_mapping; */
+	NULL,								/* hashfunc tp_hash; */
+	NULL,								/* ternaryfunc tp_call; */
+	NULL,                       		/* reprfunc tp_str; */
+	NULL,								/* getattrofunc tp_getattro; */
+	NULL,								/* setattrofunc tp_setattro; */
+	NULL,                       		/* PyBufferProcs *tp_as_buffer; */
+	Py_TPFLAGS_DEFAULT,         		/* long tp_flags; */
+};
+
+
+static Py_ssize_t yaf_tile_1_length(YafTile1Object_t *self)
+{
+	self->w = (self->x1 - self->x0);
+	self->h = (self->y1 - self->y0);
+
+	return self->w * self->h;
+}
+
+static PyObject *yaf_tile_1_subscript_int(YafTile1Object_t *self, int keynum)
+{
+	// Check boundaries and fill w and h
+	if (keynum >= yaf_tile_1_length(self) || keynum < 0)
+		return Py_BuildValue("[f]", 0);
+
+	// Calc position of the tile in the image region
+	int vy = keynum / self->w;
+	int vx = keynum - vy * self->w;
+
+	// Map tile position to image buffer
+	vx = self->x0 + vx;
+	vy = (self->y0 + self->h - 1) - vy;
+
+	// Get pixel
+	yafTilePixel1_t &pix = self->mem[ self->resx * vy + vx ];
+
+	return Py_BuildValue("[f]", pix.v);
+}
+
+static void yaf_tile_1_dealloc(YafTile1Object_t *self)
+{
+	PyObject_Del(self);
+}
+
+PySequenceMethods sequence_methods_1 =
+{
+	( lenfunc ) yaf_tile_1_length,
+	NULL,
+	NULL,
+	( ssizeargfunc ) yaf_tile_1_subscript_int
+};
+
+PyTypeObject yafTile1_Type =
+{
+	PyVarObject_HEAD_INIT(NULL, 0)
+	"yaf_tile_1",							/* tp_name */
+	sizeof(YafTile1Object_t),			/* tp_basicsize */
+	0,									/* tp_itemsize */
+	( destructor ) yaf_tile_1_dealloc,	/* tp_dealloc */
+	NULL,                       		/* printfunc tp_print; */
+	NULL,								/* getattrfunc tp_getattr; */
+	NULL,								/* setattrfunc tp_setattr; */
+	NULL,								/* tp_compare */ /* DEPRECATED in python 3.0! */
+	NULL,								/* tp_repr */
+	NULL,                       		/* PyNumberMethods *tp_as_number; */
+	&sequence_methods_1,					/* PySequenceMethods *tp_as_sequence; */
+	NULL,								/* PyMappingMethods *tp_as_mapping; */
+	NULL,								/* hashfunc tp_hash; */
+	NULL,								/* ternaryfunc tp_call; */
+	NULL,                       		/* reprfunc tp_str; */
+	NULL,								/* getattrofunc tp_getattro; */
+	NULL,								/* setattrofunc tp_setattro; */
+	NULL,                       		/* PyBufferProcs *tp_as_buffer; */
+	Py_TPFLAGS_DEFAULT,         		/* long tp_flags; */
+};
+
+
+static Py_ssize_t yaf_tile_3_length(YafTile3Object_t *self)
+{
+	self->w = (self->x1 - self->x0);
+	self->h = (self->y1 - self->y0);
+
+	return self->w * self->h;
+}
+
+static PyObject *yaf_tile_3_subscript_int(YafTile3Object_t *self, int keynum)
+{
+	// Check boundaries and fill w and h
+	if (keynum >= yaf_tile_3_length(self) || keynum < 0)
+		return Py_BuildValue("[f,f,f]", 0, 0, 0);
+
+	// Calc position of the tile in the image region
+	int vy = keynum / self->w;
+	int vx = keynum - vy * self->w;
+
+	// Map tile position to image buffer
+	vx = self->x0 + vx;
+	vy = (self->y0 + self->h - 1) - vy;
+
+	// Get pixel
+	yafTilePixel3_t &pix = self->mem[ self->resx * vy + vx ];
+
+	return Py_BuildValue("[f,f,f]", pix.x, pix.y, pix.z);
+}
+
+static void yaf_tile_3_dealloc(YafTile3Object_t *self)
+{
+	PyObject_Del(self);
+}
+
+PySequenceMethods sequence_methods_3 =
+{
+	( lenfunc ) yaf_tile_3_length,
+	NULL,
+	NULL,
+	( ssizeargfunc ) yaf_tile_3_subscript_int
+};
+
+PyTypeObject yafTile3_Type =
+{
+	PyVarObject_HEAD_INIT(NULL, 0)
+	"yaf_tile_3",							/* tp_name */
+	sizeof(YafTile3Object_t),			/* tp_basicsize */
+	0,									/* tp_itemsize */
+	( destructor ) yaf_tile_3_dealloc,	/* tp_dealloc */
+	NULL,                       		/* printfunc tp_print; */
+	NULL,								/* getattrfunc tp_getattr; */
+	NULL,								/* setattrfunc tp_setattr; */
+	NULL,								/* tp_compare */ /* DEPRECATED in python 3.0! */
+	NULL,								/* tp_repr */
+	NULL,                       		/* PyNumberMethods *tp_as_number; */
+	&sequence_methods_3,					/* PySequenceMethods *tp_as_sequence; */
 	NULL,								/* PyMappingMethods *tp_as_mapping; */
 	NULL,								/* hashfunc tp_hash; */
 	NULL,								/* ternaryfunc tp_call; */
@@ -120,25 +283,36 @@ public:
 	mDrawArea(drawAreaCallback),
 	mFlush(flushCallback)
 	{
-		tile = PyObject_New(YafTileObject_t, &yafTile_Type);
-		tile->mem = new yafTilePixel_t[x*y];
+		tile = PyObject_New(YafTile4Object_t, &yafTile4_Type);
+		dTile = PyObject_New(YafTile1Object_t, &yafTile1_Type);
+
+		tile->mem = new yafTilePixel4_t[x*y];
 		tile->resx = x;
 		tile->resy = y;
+
+		dTile->mem = new yafTilePixel1_t[x*y];
+		dTile->resx = x;
+		dTile->resy = y;
 	}
 
 	virtual ~pyOutput_t()
 	{
 		delete [] tile->mem;
+		delete [] dTile->mem;
 		Py_XDECREF(tile);
+		Py_XDECREF(dTile);
 	}
 
 	virtual bool putPixel(int x, int y, const float *c, bool alpha = true, bool depth = false, float z = 0.f)
 	{
-		yafTilePixel_t &pix= tile->mem[resx * y + x];
+		yafTilePixel4_t &pix= tile->mem[resx * y + x];
 		pix.r = c[0];
 		pix.g = c[1];
 		pix.b = c[2];
 		pix.a = alpha ? c[3] : 1.0f;
+
+        yafTilePixel1_t &dpix = dTile->mem[resx * y + x];
+        dpix.v = depth ? z : 1.f;
 
 		return true;
 	}
@@ -150,9 +324,14 @@ public:
 		tile->y0 = 0;
 		tile->y1 = resy;
 
+		dTile->x0 = 0;
+		dTile->x1 = resx;
+		dTile->y0 = 0;
+		dTile->y1 = resy;
+
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure();
-		PyEval_CallObject(mFlush, Py_BuildValue("iiO", resx, resy, tile));
+		PyEval_CallObject(mFlush, Py_BuildValue("ii(OO)", resx, resy, tile, dTile));
 		PyGILState_Release(gstate);
 	}
 
@@ -166,12 +345,17 @@ public:
 		tile->y0 = y0 - bsY;
 		tile->y1 = y1 - bsY;
 
+		dTile->x0 = x0 - bsX;
+		dTile->x1 = x1 - bsX;
+		dTile->y0 = y0 - bsY;
+		dTile->y1 = y1 - bsY;
+
 		int w = x1 - x0;
 		int h = y1 - y0;
 
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure();
-		PyEval_CallObject(mDrawArea, Py_BuildValue("iiiiO", tile->x0, resy - tile->y1, w, h, tile));
+		PyEval_CallObject(mDrawArea, Py_BuildValue("iiii(OO)", tile->x0, resy - tile->y1, w, h, tile, dTile));
 		PyGILState_Release(gstate);
 	}
 
@@ -185,6 +369,11 @@ public:
 		tile->y0 = y0 - bsY;
 		tile->y1 = y1 - bsY;
 
+		dTile->x0 = x0 - bsX;
+		dTile->x1 = x1 - bsX;
+		dTile->y0 = y0 - bsY;
+		dTile->y1 = y1 - bsY;
+
 		int w = x1 - x0;
 		int h = y1 - y0;
 		int lineL = std::min( 4, std::min( h - 1, w - 1 ) );
@@ -196,7 +385,7 @@ public:
 
 		PyGILState_STATE gstate;
 		gstate = PyGILState_Ensure();
-		PyEval_CallObject(mDrawArea, Py_BuildValue("iiiiO", tile->x0, resy - tile->y1, w, h, tile));
+		PyEval_CallObject(mDrawArea, Py_BuildValue("iiii(OO)", tile->x0, resy - tile->y1, w, h, tile, dTile));
 		PyGILState_Release(gstate);
 	}
 
@@ -231,7 +420,7 @@ private:
 				minY = y;
 				maxX = x - 1;
 				maxY = y + len;
-				x--;
+				--x;
 				break;
 
 			case BL_CORNER:
@@ -239,7 +428,7 @@ private:
 				minY = y - len - 1;
 				maxX = x + len;
 				maxY = y - 1;
-				y--;
+				--y;
 				break;
 
 			case BR_CORNER:
@@ -247,23 +436,23 @@ private:
 				minY = y - len - 1;
 				maxX = x;
 				maxY = y - 1;
-				x--;
-				y--;
+				--x;
+				--y;
 				break;
 		}
 
-		for(int i = minX; i < maxX; i++)
+		for(int i = minX; i < maxX; ++i)
 		{
-			yafTilePixel_t &pix = tile->mem[resx * y + i];
+			yafTilePixel4_t &pix = tile->mem[resx * y + i];
 			pix.r = 0.625f;
 			pix.g = 0.f;
 			pix.b = 0.f;
 			pix.a = 1.f;
 		}
 
-		for(int j = minY; j < maxY; j++)
+		for(int j = minY; j < maxY; ++j)
 		{
-			yafTilePixel_t &pix = tile->mem[resx * j + x];
+			yafTilePixel4_t &pix = tile->mem[resx * j + x];
 			pix.r = 0.625f;
 			pix.g = 0.f;
 			pix.b = 0.f;
@@ -276,7 +465,8 @@ private:
 	bool preview;
 	PyObject *mDrawArea;
 	PyObject *mFlush;
-	YafTileObject_t *tile;
+	YafTile4Object_t *tile;
+	YafTile1Object_t *dTile;
 };
 
 class pyProgress : public yafaray::progressBar_t
@@ -296,7 +486,7 @@ public:
 
 	virtual void init(int totalSteps)
 	{
-		steps_to_percent = 100.f / (float) totalSteps;
+		steps_to_percent = 1.f / (float) totalSteps;
 		doneSteps = 0;
 		report_progress(0.f);
 	}
@@ -309,7 +499,7 @@ public:
 
 	virtual void done()
 	{
-		report_progress(100.f);
+		report_progress(1.f);
 	}
 
 	virtual void setTag(const char* text)
@@ -330,7 +520,9 @@ private:
 %}
 
 %init %{
-	PyType_Ready(&yafTile_Type);
+	PyType_Ready(&yafTile4_Type);
+	PyType_Ready(&yafTile1_Type);
+	PyType_Ready(&yafTile3_Type);
 %}
 
 %typemap(in) PyObject *pyfunc

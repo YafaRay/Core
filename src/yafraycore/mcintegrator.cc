@@ -507,8 +507,6 @@ inline void mcIntegrator_t::recursiveRaytrace(renderState_t &state, diffRay_t &r
 				float s1 = hal2.getNext();
 				float s2 = hal3.getNext();
 
-
-
 				if(material->getFlags() & BSDF_GLOSSY)
 				{
                     color_t mcol = 0.f;
@@ -570,6 +568,7 @@ inline void mcIntegrator_t::recursiveRaytrace(renderState_t &state, diffRay_t &r
 			}
 
 			col += gcol * d_1;
+            //if(col.maximum() > 1.f) Y_WARNING << col << " | " << d_1 << yendl;
 			state.rayDivision = oldDivision;
 			state.rayOffset = oldOffset;
 			state.dc1 = old_dc1;

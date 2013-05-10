@@ -121,7 +121,7 @@ void renderEnvironment_t::loadPlugins(const std::string &path)
 	typedef void (reg_t)(renderEnvironment_t &);
 	Y_INFO_ENV << "Loading plugins ..." << yendl;
 	std::list<std::string> plugins=listDir(path);
-	
+
 	for(std::list<std::string>::iterator i=plugins.begin();i!=plugins.end();++i)
 	{
 		sharedlibrary_t plug(i->c_str());
@@ -139,7 +139,7 @@ bool renderEnvironment_t::getPluginPath(std::string &path)
 #ifdef _WIN32
 	HKEY hkey;
 	DWORD dwType, dwSize;
-	
+
 	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE,"Software\\YafaRay Team\\YafaRay",0,KEY_READ,&hkey)==ERROR_SUCCESS)
 	{
 		dwType = REG_EXPAND_SZ;
@@ -149,7 +149,7 @@ bool renderEnvironment_t::getPluginPath(std::string &path)
 		char *pInstallDir=(char *)malloc(MAX_PATH);
 
   		dwStat = RegQueryValueEx(hkey, TEXT("InstallDir"), NULL, NULL, (LPBYTE)pInstallDir, &dwSize);
-		
+
 		if (dwStat == NO_ERROR)
 		{
 			path = std::string(pInstallDir) + "\\plugins";
@@ -157,14 +157,14 @@ bool renderEnvironment_t::getPluginPath(std::string &path)
 			RegCloseKey(hkey);
 			return true;
 		}
-		
+
 		Y_ERROR_ENV << "Couldn't READ \'InstallDir\' value." << yendl;
 		free(pInstallDir);
 		RegCloseKey(hkey);
 	}
 	else Y_ERROR_ENV << "Couldn't find registry key." << yendl;
 
-	Y_ERROR << "Please fix your registry. Maybe you need add/modify" << yendl; 
+	Y_ERROR << "Please fix your registry. Maybe you need add/modify" << yendl;
 	Y_ERROR << "HKEY_LOCAL_MACHINE\\Software\\YafaRay Team\\YafaRay\\InstallDir" << yendl;
 	Y_ERROR << "key at registry. You can use \"regedit.exe\" to adjust it at" << yendl;
 	Y_ERROR << "your own risk. If you are unsure, reinstall YafaRay" << yendl;
@@ -334,7 +334,7 @@ material_t* renderEnvironment_t::createMaterial(const std::string &name, paraMap
 	}
 	ErrOnCreate(type);
 	return 0;
-}	
+}
 
 background_t* renderEnvironment_t::createBackground(const std::string &name, paraMap_t &params)
 {
@@ -370,9 +370,9 @@ imageHandler_t* renderEnvironment_t::createImageHandler(const std::string &name,
 	std::string pname = "ImageHandler";
 	std::stringstream newname;
 	int sufixCount = 0;
-	
+
 	newname << name;
-	
+
 	if(addToTable)
 	{
 		while(true)
@@ -390,17 +390,17 @@ imageHandler_t* renderEnvironment_t::createImageHandler(const std::string &name,
 			else break;
 		}
 	}
-	
+
 	std::string type;
-	
+
 	if(! params.getParam("type", type) )
 	{
 		ErrNoType; return 0;
 	}
-	
+
 	imageHandler_t* ih = 0;
 	std::map<std::string, imagehandler_factory_t *>::iterator i=imagehandler_factory.find(type);
-	
+
 	if(i!=imagehandler_factory.end())
 	{
 		ih = i->second(params,*this);
@@ -409,18 +409,18 @@ imageHandler_t* renderEnvironment_t::createImageHandler(const std::string &name,
 	{
 		ErrUnkType(type); return 0;
 	}
-	
+
 	if(ih)
 	{
 		if(addToTable) imagehandler_table[newname.str()] = ih;
-		
+
 		InfoSucces(newname.str(), type);
-		
+
 		return ih;
 	}
-	
+
 	ErrOnCreate(type);
-	
+
 	return 0;
 }
 
@@ -522,7 +522,7 @@ imageFilm_t* renderEnvironment_t::createImageFilm(const paraMap_t &params, color
 	int tileSize = 32;
 	bool premult = false;
 	bool drawParams = false;
-		
+
 	params.getParam("gamma", gamma);
 	params.getParam("clamp_rgb", clamp);
 	params.getParam("AA_pixelwidth", filt_sz);
@@ -536,7 +536,7 @@ imageFilm_t* renderEnvironment_t::createImageFilm(const paraMap_t &params, color
 	params.getParam("tiles_order", tiles_order); // Order of the render buckets or tiles
 	params.getParam("premult", premult); // Premultipy Alpha channel for better alpha antialiasing against bg
 	params.getParam("drawParams", drawParams);
-	
+
 	imageFilm_t::filterType type=imageFilm_t::BOX;
 	if(name)
 	{
@@ -554,7 +554,7 @@ imageFilm_t* renderEnvironment_t::createImageFilm(const paraMap_t &params, color
 		else if(*tiles_order == "random") tilesOrder = imageSpliter_t::RANDOM;
 	}
 	else Y_INFO_ENV << "Defaulting to Linear tiles order." << yendl; // this is info imho not a warning
-	
+
 	imageFilm_t *film = new imageFilm_t(width, height, xstart, ystart, output, filt_sz, type, this, showSampledPixels, tileSize, tilesOrder, premult, drawParams);
 
 	film->setClamp(clamp);
@@ -629,40 +629,41 @@ VolumeRegion* renderEnvironment_t::createVolumeRegion(const std::string &name, p
 bool renderEnvironment_t::setupScene(scene_t &scene, const paraMap_t &params, colorOutput_t &output, progressBar_t *pb)
 {
 	const std::string *name=0;
-	int AA_passes=1, AA_samples=1, AA_inc_samples=1, nthreads=1;
+	int AA_passes=1, AA_samples=1, AA_inc_samples=1, nthreads=-1;
 	double AA_threshold=0.05;
 	bool z_chan = false;
+	bool norm_z_chan = true;
 	bool drawParams = false;
 	const std::string *custString = 0;
 	std::stringstream aaSettings;
-	
+
 	if(! params.getParam("camera_name", name) )
 	{
 		Y_ERROR_ENV << "Specify a Camera!!" << yendl;
 		return false;
 	}
 	camera_t *cam = this->getCamera(*name);
-	
+
 	if(!cam)
 	{
 		Y_ERROR_ENV << "Specify an _existing_ Camera!!" << yendl;
 		return false;
 	}
-	
+
 	if(!params.getParam("integrator_name", name) )
 	{
 		Y_ERROR_ENV << "Specify an Integrator!!" << yendl;
 		return false;
 	}
-	
+
 	integrator_t *inte = this->getIntegrator(*name);
-	
+
 	if(!inte)
 	{
 		Y_ERROR_ENV << "Specify an _existing_ Integrator!!" << yendl;
 		return false;
 	}
-	
+
 	if(inte->integratorType() != integrator_t::SURFACE)
 	{
 		Y_ERROR_ENV << "Integrator is no surface integrator!" << yendl;
@@ -674,7 +675,7 @@ bool renderEnvironment_t::setupScene(scene_t &scene, const paraMap_t &params, co
 		Y_ERROR_ENV << "Specify a Volume Integrator!" << yendl;
 		return false;
 	}
-	
+
 	integrator_t *volInte = this->getIntegrator(*name);
 
 	background_t *backg = 0;
@@ -683,7 +684,7 @@ bool renderEnvironment_t::setupScene(scene_t &scene, const paraMap_t &params, co
 		backg = this->getBackground(*name);
 		if(!backg) Y_ERROR_ENV << "please specify an _existing_ Background!!" << yendl;
 	}
-	
+
 	params.getParam("AA_passes", AA_passes);
 	params.getParam("AA_minsamples", AA_samples);
 	AA_inc_samples = AA_samples;
@@ -691,35 +692,37 @@ bool renderEnvironment_t::setupScene(scene_t &scene, const paraMap_t &params, co
 	params.getParam("AA_threshold", AA_threshold);
 	params.getParam("threads", nthreads); // number of threads, -1 = auto detection
 	params.getParam("z_channel", z_chan); // render z-buffer
+	params.getParam("normalize_z_channel", norm_z_chan); // normalize values of z-buffer in range [0,1]
 	params.getParam("drawParams", drawParams);
 	params.getParam("customString", custString);
-	
+
 	imageFilm_t *film = createImageFilm(params, output);
-	
+
 	if (pb)
 	{
 		film->setProgressBar(pb);
 		inte->setProgressBar(pb);
 	}
-	
+
 	if(z_chan) film->initDepthMap();
-	
+
 	params.getParam("filter_type", name); // AA filter type
 	aaSettings << "AA Settings (" << ((name)?*name:"box") << "): " << AA_passes << ";" << AA_samples << ";" << AA_inc_samples;
-	
+
 	film->setAAParams(aaSettings.str());
 	if(custString) film->setCustomString(*custString);
-	
+
 	//setup scene and render.
 	scene.setImageFilm(film);
 	scene.depthChannel(z_chan);
+	scene.setNormalizeDepthChannel(norm_z_chan);
 	scene.setCamera(cam);
 	scene.setSurfIntegrator((surfaceIntegrator_t*)inte);
 	scene.setVolIntegrator((volumeIntegrator_t*)volInte);
 	scene.setAntialiasing(AA_samples, AA_passes, AA_inc_samples, AA_threshold);
 	scene.setNumThreads(nthreads);
 	if(backg) scene.setBackground(backg);
-	
+
 	return true;
 }
 
@@ -802,7 +805,7 @@ std::vector<std::string> renderEnvironment_t::listImageHandlers()
 		}
 	}
 	else Y_ERROR_ENV << "There is no image handlers registrered" << yendl;
-	
+
 	return ret;
 }
 
@@ -817,7 +820,7 @@ std::vector<std::string> renderEnvironment_t::listImageHandlersFullName()
 		}
 	}
 	else Y_ERROR_ENV << "There is no image handlers registrered" << yendl;
-	
+
 	return ret;
 }
 
@@ -832,16 +835,16 @@ std::string renderEnvironment_t::getImageFormatFromFullName(const std::string &f
 		}
 	}
 	else Y_ERROR_ENV << "There is no image handlers registrered" << yendl;
-	
+
 	return ret;
 }
 
 std::string renderEnvironment_t::getImageFormatFromExtension(const std::string &ext)
 {
 	std::string ret = "";
-	
+
 	if(ext == "" || ext == " ") return ret;
-	
+
 	if(imagehandler_extensions.size() > 0)
 	{
 		for(std::map<std::string, std::string>::const_iterator i=imagehandler_extensions.begin(); i != imagehandler_extensions.end(); ++i)
@@ -850,7 +853,7 @@ std::string renderEnvironment_t::getImageFormatFromExtension(const std::string &
 		}
 	}
 	else Y_ERROR_ENV << "There is no image handlers registrered" << yendl;
-	
+
 	return ret;
 }
 
@@ -865,7 +868,7 @@ std::string renderEnvironment_t::getImageFullNameFromFormat(const std::string &f
 		}
 	}
 	else Y_ERROR_ENV << "There is no image handlers registrered" << yendl;
-	
+
 	return ret;
 }
 

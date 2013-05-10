@@ -48,7 +48,7 @@ class random_t;
 
 typedef unsigned int objID_t;
 
-/*! 
+/*!
 	\var renderState_t::wavelength
 		the range is defined going from 400nm (0.0) to 700nm (1.0)
 		although the widest range humans can perceive is ofteb given 380-780nm.
@@ -83,7 +83,7 @@ struct YAFRAYCORE_EXPORT renderState_t
 	mutable void *userdata; //!< a fixed amount of memory where materials may keep data to avoid recalculations...really need better memory management :(
 	void *lightdata; //!< reserved; non-dirac lights may do some surface-point dependant initializations in the future to reduce redundancy...
 	random_t *const prng; //!< a pseudorandom number generator
-	
+
 	//! set some initial values that are always the same before integrating a primary ray
 	void setDefaults()
 	{
@@ -164,7 +164,7 @@ class YAFRAYCORE_EXPORT scene_t
 		bool addVmapValues(float *val);
 		bool smoothMesh(objID_t id, PFLOAT angle);
 		bool update();
-		
+
 		bool addLight(light_t *l);
 		bool addMaterial(material_t *m, const char* name);
 		objID_t getNextFreeID();
@@ -180,7 +180,8 @@ class YAFRAYCORE_EXPORT scene_t
 		void setNumThreads(int threads);
 		void setMode(int m){ mode = m; }
 		void depthChannel(bool enable){ do_depth=enable; }
-		
+		void setNormalizeDepthChannel(bool enable){ norm_depth=enable; }
+
 		background_t* getBackground() const;
 		triangleObject_t* getMesh(objID_t id) const;
 		object3d_t* getObject(objID_t id) const;
@@ -193,18 +194,19 @@ class YAFRAYCORE_EXPORT scene_t
 		//! only for backward compatibility!
 		void getAAParameters(int &samples, int &passes, int &inc_samples, CFLOAT &threshold) const;
 		bool doDepth() const { return do_depth; }
-		
+		bool normalizedDepth() const { return norm_depth; }
+
 		bool intersect(const ray_t &ray, surfacePoint_t &sp) const;
 		bool isShadowed(renderState_t &state, const ray_t &ray) const;
 		bool isShadowed(renderState_t &state, const ray_t &ray, int maxDepth, color_t &filt) const;
-		
+
 		enum sceneState { READY, GEOMETRY, OBJECT, VMAP };
 		enum changeFlags { C_NONE=0, C_GEOM=1, C_LIGHT= 1<<1, C_OTHER=1<<2,
 							C_ALL=C_GEOM|C_LIGHT|C_OTHER };
-		
+
 		std::vector<light_t *> lights;
 		volumeIntegrator_t *volIntegrator;
-		
+
 	protected:
 
 		sceneGeometryState_t state;
@@ -219,13 +221,14 @@ class YAFRAYCORE_EXPORT scene_t
 		background_t *background;
 		surfaceIntegrator_t *surfIntegrator;
 		bound_t sceneBound; //!< bounding box of all (finite) scene geometry
-		
+
 		int AA_samples, AA_passes;
 		int AA_inc_samples; //!< sample count for additional passes
 		CFLOAT AA_threshold;
 		int nthreads;
 		int mode; //!< sets the scene mode (triangle-only, virtual primitives)
 		bool do_depth;
+		bool norm_depth;
 		int signals;
 		mutable yafthreads::mutex_t sig_mutex;
 };

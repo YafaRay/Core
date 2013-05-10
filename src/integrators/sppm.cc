@@ -62,7 +62,7 @@ bool SPPM::render(yafaray::imageFilm_t *image)
 	maxDepth = 0.f;
 	minDepth = 1e38f;
 
-	if(scene->doDepth()) precalcDepths();
+	if(scene->doDepth() && scene->normalizedDepth()) precalcDepths();
 
 	initializePPM(); // seems could integrate into the preRender
 	renderPass(1, 0, false);
@@ -96,6 +96,7 @@ bool SPPM::renderTile(renderArea_t &a, int n_samples, int offset, bool adaptive,
 	int x;
 	const camera_t* camera = scene->getCamera();
 	bool do_depth = scene->doDepth();
+	bool normalizedDepth = scene->normalizedDepth();
 	x=camera->resX();
 	diffRay_t c_ray;
 	ray_t d_ray;
@@ -186,14 +187,22 @@ bool SPPM::renderTile(renderArea_t &a, int n_samples, int offset, bool adaptive,
 
 				if(do_depth)
 				{
-					float depth = 0.f;
-					if(c_ray.tmax > 0.f)
-					{
-						depth = 1.f - (c_ray.tmax - minDepth) * maxDepth; // Distance normalization
-					}
-					imageFilm->addDepthSample(0, depth, j, i, dx, dy);
+					if(normalizedDepth)
+                    {
+                        float depth = 0.f;
+                        if(c_ray.tmax > 0.f)
+                        {
+                            depth = 1.f - (c_ray.tmax - minDepth) * maxDepth; // Distance normalization
+                        }
+
+                        imageFilm->addDepthSample(0, depth, j, i, dx, dy);
+                    }
+                    else
+                    {
+                        imageFilm->addDepthSample(0, c_ray.tmax, j, i, dx, dy);
+                    }
 				}
-			}
+            }
 		}
 	}
 	return true;
@@ -471,10 +480,10 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 
 	void *o_udat = state.userdata;
 	bool oldIncludeLights = state.includeLights;
-	
+
 	if(transpBackground) alpha=0.0;
 	else alpha=1.0;
-	
+
 	if(scene->intersect(ray, sp))
 	{
 		unsigned char userdata[USER_DATA_SIZE+7];
@@ -864,7 +873,7 @@ integrator_t* SPPM::factory(paraMap_t &params, renderEnvironment_t &render)
 	params.getParam("photonRadius", dsRad);
 	params.getParam("searchNum", searchNum);
 	params.getParam("pmIRE", pmIRE);
-	
+
 	params.getParam("bg_transp", bg_transp);
 	params.getParam("bg_transp_refract", bg_transp_refract);
 
