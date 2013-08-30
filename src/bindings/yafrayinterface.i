@@ -643,7 +643,7 @@ namespace yafaray
 	{
 		public:
 			matrix4x4_t() {};
-			matrix4x4_t(const PFLOAT init);
+			matrix4x4_t(const float init);
 			matrix4x4_t(const matrix4x4_t & source);
 			matrix4x4_t(const float source[4][4]);
 			matrix4x4_t(const double source[4][4]);
@@ -653,11 +653,11 @@ namespace yafaray
 			matrix4x4_t & inverse();
 			matrix4x4_t & transpose();
 			void identity();
-			void translate(PFLOAT dx,PFLOAT dy,PFLOAT dz);
-			void rotateX(PFLOAT degrees);
-			void rotateY(PFLOAT degrees);
-			void rotateZ(PFLOAT degrees);
-			void scale(PFLOAT sx, PFLOAT sy, PFLOAT sz);
+			void translate(float dx,float dy,float dz);
+			void rotateX(float degrees);
+			void rotateY(float degrees);
+			void rotateZ(float degrees);
+			void scale(float sx, float sy, float sz);
 			int invalid() const { return _invalid; }
 			// ignored by swig
 			//const PFLOAT * operator [] (int i) const { return matrix[i]; }
@@ -674,7 +674,7 @@ namespace yafaray
 
 		protected:
 
-			PFLOAT  matrix[4][4];
+			float  matrix[4][4];
 			int _invalid;
 		};
 
