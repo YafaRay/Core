@@ -298,7 +298,7 @@ bool tiledIntegrator_t::renderTile(renderArea_t &a, int n_samples, int offset, b
 				col *= scene->volIntegrator->transmittance(rstate, c_ray); // T
 				col += scene->volIntegrator->integrate(rstate, c_ray); // L_v
 				if(col.A>1.f) col.A=1.f; //FIXME: From the previous operations alpha could be more than 1.0 (why??) causing artifacts, so I've set this upper limit to avoid them.
-                		imageFilm->addSample(wt * col, j, i, dx, dy, &a);
+				imageFilm->addSample(wt * col, j, i, dx, dy, &a);
 
 				if(do_depth)
 				{
