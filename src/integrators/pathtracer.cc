@@ -193,7 +193,7 @@ colorA_t pathIntegrator_t::integrate(renderState_t &state, diffRay_t &ray/*, sam
 				throughput = scol;
 				state.includeLights = false;
 
-				pRay.tmin = MIN_RAYDIST;
+				pRay.tmin = scene->raydist_min_bias;
 				pRay.tmax = -1.0;
 				pRay.from = sp.P;
 				
@@ -234,7 +234,7 @@ colorA_t pathIntegrator_t::integrate(renderState_t &state, diffRay_t &ray/*, sam
 					caustic = traceCaustics && (s.sampledFlags & (BSDF_SPECULAR | BSDF_GLOSSY | BSDF_FILTER));
 					state.includeLights = caustic;
 
-					pRay.tmin = MIN_RAYDIST;
+					pRay.tmin = scene->raydist_min_bias;
 					pRay.tmax = -1.0;
 					pRay.from = hit->P;
 

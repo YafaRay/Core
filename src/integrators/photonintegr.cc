@@ -236,7 +236,7 @@ bool photonIntegrator_t::preprocess()
 		}
 
 		pcol = tmplights[lightNum]->emitPhoton(s1, s2, s3, s4, ray, lightPdf);
-		ray.tmin = MIN_RAYDIST;
+		ray.tmin = scene->raydist_min_bias;
 		ray.tmax = -1.0;
 		pcol *= fNumLights*lightPdf/lightNumPdf; //remember that lightPdf is the inverse of th pdf, hence *=...
 		
@@ -319,7 +319,7 @@ bool photonIntegrator_t::preprocess()
 
 			ray.from = sp.P;
 			ray.dir = wo;
-			ray.tmin = MIN_RAYDIST;
+			ray.tmin = scene->raydist_min_bias;
 			ray.tmax = -1.0;
 			++nBounces;
 		}
@@ -399,7 +399,7 @@ bool photonIntegrator_t::preprocess()
 			}
 
 			pcol = tmplights[lightNum]->emitPhoton(s1, s2, s3, s4, ray, lightPdf);
-			ray.tmin = MIN_RAYDIST;
+			ray.tmin = scene->raydist_min_bias;
 			ray.tmax = -1.0;
 			pcol *= fNumLights*lightPdf/lightNumPdf; //remember that lightPdf is the inverse of th pdf, hence *=...
 			if(pcol.isBlack())
@@ -478,7 +478,7 @@ bool photonIntegrator_t::preprocess()
 				
 				ray.from = sp.P;
 				ray.dir = wo;
-				ray.tmin = MIN_RAYDIST;
+				ray.tmin = scene->raydist_min_bias;
 				ray.tmax = -1.0;
 				++nBounces;
 			}
@@ -662,7 +662,7 @@ color_t photonIntegrator_t::finalGathering(renderState_t &state, const surfacePo
 		scol *= W;
 		if(scol.isBlack()) continue;
 
-		pRay.tmin = MIN_RAYDIST;
+		pRay.tmin = scene->raydist_min_bias;
 		pRay.tmax = -1.0;
 		pRay.from = hit.P;
 		throughput = scol;
@@ -729,7 +729,7 @@ color_t photonIntegrator_t::finalGathering(renderState_t &state, const surfacePo
 
 			scol *= W;
 
-			pRay.tmin = MIN_RAYDIST;
+			pRay.tmin = scene->raydist_min_bias;
 			pRay.tmax = -1.0;
 			pRay.from = hit.P;
 			throughput *= scol;

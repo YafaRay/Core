@@ -295,7 +295,7 @@ colorA_t biDirIntegrator_t::integrate(renderState_t &state, diffRay_t &ray) cons
 
 		// sample light (todo!)
 		ray_t lray;
-		lray.tmin = MIN_RAYDIST;
+		lray.tmin = scene->raydist_min_bias;
 		lray.tmax = -1.f;
 		float lightNumPdf;
 		int lightNum = lightPowerD->DSample(prng(), &lightNumPdf);
@@ -479,7 +479,7 @@ int biDirIntegrator_t::createPath(renderState_t &state, ray_t &start, std::vecto
 		v.flags = s.sampledFlags;
 		v.wo = ray.dir;
 		ray.from = v.sp.P;
-		ray.tmin = MIN_RAYDIST;
+		ray.tmin = scene->raydist_min_bias;
 		ray.tmax = -1.f;
 	}
 	++dbg;

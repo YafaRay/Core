@@ -206,6 +206,8 @@ class YAFRAYCORE_EXPORT scene_t
 
 		std::vector<light_t *> lights;
 		volumeIntegrator_t *volIntegrator;
+        float raydist_min_bias;
+        float shadow_bias;
 
 	protected:
 

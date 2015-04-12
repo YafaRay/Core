@@ -322,7 +322,7 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 		if(lightNum >= numDLights){ Y_ERROR << integratorName << ": lightPDF sample error! "<<sL<<"/"<<lightNum<<"... stopping now.\n"; delete lightPowerD; return; }
 
 		pcol = tmplights[lightNum]->emitPhoton(s1, s2, s3, s4, ray, lightPdf);
-		ray.tmin = MIN_RAYDIST;
+		ray.tmin = scene->raydist_min_bias;
 		ray.tmax = -1.0;
 		pcol *= fNumLights*lightPdf/lightNumPdf; //remember that lightPdf is the inverse of th pdf, hence *=...
 
@@ -409,7 +409,7 @@ void SPPM::prePass(int samples, int offset, bool adaptive)
 
 			ray.from = sp.P;
 			ray.dir = wo;
-			ray.tmin = MIN_RAYDIST;
+			ray.tmin = scene->raydist_min_bias;
 			ray.tmax = -1.0;
 			++nBounces;
 
@@ -572,7 +572,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 					//temp.z = scale VDOT sp.N;
 
 					//double inv_radi = 1 / sqrt(radius2);
-					//temp.x  *= inv_radi; temp.y *= inv_radi; temp.z *=  1. / (2.f * MIN_RAYDIST);
+					//temp.x  *= inv_radi; temp.y *= inv_radi; temp.z *=  1. / (2.f * scene->raydist_min_bias);
 					//if(temp.lengthSqr() > 1.)continue;
 
 					gInfo.photonCount++;
@@ -660,7 +660,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 						state.chromatic = false;
 						color_t wl_col;
 						wl2rgb(state.wavelength, wl_col);
-						refRay = diffRay_t(sp.P, wi, MIN_RAYDIST);
+						refRay = diffRay_t(sp.P, wi, scene->raydist_min_bias);
 						t_cing = traceGatherRay(state, refRay, hp);
 						t_cing.photonFlux *= mcol * wl_col * W;
 						t_cing.constantRandiance *= mcol * wl_col * W;
@@ -726,7 +726,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 
 					if(s.sampledFlags & BSDF_GLOSSY)
 					{
-						refRay = diffRay_t(sp.P, wi, MIN_RAYDIST);
+						refRay = diffRay_t(sp.P, wi, scene->raydist_min_bias);
 						if(s.sampledFlags & BSDF_REFLECT) spDiff.reflectedRay(ray, refRay);
 						else if(s.sampledFlags & BSDF_TRANSMIT) spDiff.refractedRay(ray, refRay, material->getMatIOR());
 
@@ -768,7 +768,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 
 				if(reflect)
 				{
-					diffRay_t refRay(sp.P, dir[0], MIN_RAYDIST);
+					diffRay_t refRay(sp.P, dir[0], scene->raydist_min_bias);
 					spDiff.reflectedRay(ray, refRay); // compute the ray differentaitl
 					GatherInfo refg = traceGatherRay(state, refRay, hp);
 					if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
@@ -785,7 +785,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 				}
 				if(refract)
 				{
-					diffRay_t refRay(sp.P, dir[1], MIN_RAYDIST);
+					diffRay_t refRay(sp.P, dir[1], scene->raydist_min_bias);
 					spDiff.refractedRay(ray, refRay, material->getMatIOR());
 					GatherInfo refg = traceGatherRay(state, refRay, hp);
 					if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
