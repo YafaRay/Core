@@ -634,6 +634,8 @@ bool renderEnvironment_t::setupScene(scene_t &scene, const paraMap_t &params, co
 	bool z_chan = false;
 	bool norm_z_chan = true;
 	bool drawParams = false;
+    bool gs_custom_shadow_bias_enabled=false;
+    float gs_custom_shadow_bias_value=0.0005;
 	const std::string *custString = 0;
 	std::stringstream aaSettings;
 
@@ -695,6 +697,8 @@ bool renderEnvironment_t::setupScene(scene_t &scene, const paraMap_t &params, co
 	params.getParam("normalize_z_channel", norm_z_chan); // normalize values of z-buffer in range [0,1]
 	params.getParam("drawParams", drawParams);
 	params.getParam("customString", custString);
+    params.getParam("gs_custom_shadow_bias_enabled", gs_custom_shadow_bias_enabled);
+    params.getParam("gs_custom_shadow_bias_value", gs_custom_shadow_bias_value);
 
 	imageFilm_t *film = createImageFilm(params, output);
 
@@ -722,6 +726,17 @@ bool renderEnvironment_t::setupScene(scene_t &scene, const paraMap_t &params, co
 	scene.setAntialiasing(AA_samples, AA_passes, AA_inc_samples, AA_threshold);
 	scene.setNumThreads(nthreads);
 	if(backg) scene.setBackground(backg);
+    if(gs_custom_shadow_bias_enabled)
+    {
+        scene.shadow_bias=gs_custom_shadow_bias_value;
+        scene.raydist_min_bias=gs_custom_shadow_bias_value/10.f;
+    }
+    else
+    {
+        scene.shadow_bias=0.0005;
+        scene.raydist_min_bias=0.00005;
+    }
+
 
 	return true;
 }
