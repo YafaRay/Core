@@ -50,7 +50,7 @@ class shinyDiffuseMat_t: public nodeMaterial_t
         void getFresnel(const vector3d_t &wo, const vector3d_t &N, float &Kr) const;
 
         void initOrenNayar(double sigma);
-        CFLOAT OrenNayar(const vector3d_t &wi, const vector3d_t &wo, const vector3d_t &N) const;
+        CFLOAT OrenNayar(const vector3d_t &wi, const vector3d_t &wo, const vector3d_t &N, bool useTextureSigma, double textureSigma) const;
 
         bool mIsTransparent;                //!< Boolean value which is true if you have transparent component
         bool mIsTranslucent;                //!< Boolean value which is true if you have translucent component
@@ -67,6 +67,7 @@ class shinyDiffuseMat_t: public nodeMaterial_t
         shaderNode_t *mTranslucencyShader;  //!< Shader node for translucency strength (float)
         shaderNode_t *mMirrorShader;        //!< Shader node for specular reflection strength (float)
         shaderNode_t *mMirrorColorShader;   //!< Shader node for specular reflection color
+        shaderNode_t *mSigmaOrenShader;   //!< Shader node for sigma in Oren Nayar material
 
         color_t mDiffuseColor;              //!< BSDF Diffuse component color
         color_t mEmitColor;                 //!< Emit color
