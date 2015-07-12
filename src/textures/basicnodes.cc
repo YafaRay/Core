@@ -174,7 +174,8 @@ void textureMapper_t::evalDerivative(nodeStack_t &stack, const renderState_t &st
 
 	getCoords(texpt, Ng, sp, state);
 
-	if (tex->discrete())
+	//if (tex->discrete()) //FIXME!! Dirty workaround/hack to avoid artifacts (slightly shadowed triangles with slightly different normals?? coincidently with changes in dSdU, dSdV, etc) when using image textures for bump mapping. This change effectively disables this entire calculation intended to be done for image textures, which is not really a good solution. We sould review why is this problem happening in the first place. Looks like some strange issue when using dSdU/dSdV for calculations???
+	if(false) //Due to the above explanation, all this "branch" is disabled for now...
 	{
 		texpt = doMapping(texpt, Ng);
 		colorA_t color(0.f);
