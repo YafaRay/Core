@@ -105,6 +105,7 @@ class YAFRAYCORE_EXPORT material_t
 			used to trace transparent shadows. Note that in this case, initBSDF was NOT called before!
 		*/
 		virtual bool isTransparent() const { return false; }
+		virtual bool castShadows() const { return true; }
 
 		/*!	used for computing transparent shadows.	Default implementation returns black (i.e. solid shadow).
 			This is only used for shadow calculations and may only be called when isTransparent returned true.	*/

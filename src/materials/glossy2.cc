@@ -30,12 +30,13 @@ __BEGIN_YAFRAY
 class glossyMat_t: public nodeMaterial_t
 {
 	public:
-		glossyMat_t(const color_t &col, const color_t &dcol, float reflect, float diff, float expo, bool as_diffuse);
+		glossyMat_t(const color_t &col, const color_t &dcol, float reflect, float diff, float expo, bool as_diffuse, bool bCastShadows);
         virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, BSDF_t &bsdfTypes)const;
 		virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wi, BSDF_t bsdfs)const;
 		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const;
 		virtual float pdf(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wi, BSDF_t bsdfs)const;
 		static material_t* factory(paraMap_t &, std::list< paraMap_t > &, renderEnvironment_t &);
+		virtual bool castShadows() const { return mCastShadows; }
 
 		struct MDat_t
 		{
@@ -60,11 +61,12 @@ class glossyMat_t: public nodeMaterial_t
 		bool as_diffuse, with_diffuse, anisotropic;
 		bool orenNayar;
 		float orenA, orenB;
+		bool mCastShadows; //!< enables/disables casting shadows. It should always be enabled except in specific cases.
 };
 
-glossyMat_t::glossyMat_t(const color_t &col, const color_t &dcol, float reflect, float diff, float expo, bool as_diff):
+glossyMat_t::glossyMat_t(const color_t &col, const color_t &dcol, float reflect, float diff, float expo, bool as_diff, bool bCastShadows):
 			diffuseS(0), glossyS(0), glossyRefS(0), bumpS(0), gloss_color(col), diff_color(dcol), exponent(expo),
-			reflectivity(reflect), mDiffuse(diff), as_diffuse(as_diff), with_diffuse(false), anisotropic(false)
+			reflectivity(reflect), mDiffuse(diff), as_diffuse(as_diff), with_diffuse(false), anisotropic(false), mCastShadows(bCastShadows)
 {
 	bsdfFlags = BSDF_NONE;
 
@@ -360,6 +362,7 @@ material_t* glossyMat_t::factory(paraMap_t &params, std::list< paraMap_t > &para
 	float exponent=50.f; //wild guess, do sth better
 	bool as_diff=true;
 	bool aniso=false;
+	bool bCastShadows=true;
 	const std::string *name=0;
 	params.getParam("color", col);
 	params.getParam("diffuse_color", dcol);
@@ -368,7 +371,8 @@ material_t* glossyMat_t::factory(paraMap_t &params, std::list< paraMap_t > &para
 	params.getParam("as_diffuse", as_diff);
 	params.getParam("exponent", exponent);
 	params.getParam("anisotropic", aniso);
-	glossyMat_t *mat = new glossyMat_t(col, dcol , refl, diff, exponent, as_diff);
+	params.getParam("cast_shadows",     bCastShadows);
+	glossyMat_t *mat = new glossyMat_t(col, dcol , refl, diff, exponent, as_diff, bCastShadows);
 
 	if(aniso)
 	{
