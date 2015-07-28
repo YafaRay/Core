@@ -27,9 +27,9 @@
 __BEGIN_YAFRAY
 
 
-roughGlassMat_t::roughGlassMat_t(float IOR, color_t filtC, const color_t &srcol, bool fakeS, float alpha, float disp_pow):
+roughGlassMat_t::roughGlassMat_t(float IOR, color_t filtC, const color_t &srcol, bool fakeS, float alpha, float disp_pow, bool bCastShadows):
 		bumpS(0), mirColS(0), filterCol(filtC), specRefCol(srcol), ior(IOR), a2(alpha*alpha), a(alpha), absorb(false),
-		disperse(false), fakeShadow(fakeS)
+		disperse(false), fakeShadow(fakeS), mCastShadows(bCastShadows)
 {
 	bsdfFlags = BSDF_ALL_GLOSSY;
 	if(fakeS) bsdfFlags |= BSDF_FILTER;
@@ -273,6 +273,8 @@ material_t* roughGlassMat_t::factory(paraMap_t &params, std::list< paraMap_t > &
 	color_t filtCol(1.f), absorp(1.f), srCol(1.f);
 	const std::string *name=0;
 	bool fake_shad = false;
+	bool bCastShadows = true;
+	
 	params.getParam("IOR", IOR);
 	params.getParam("filter_color", filtCol);
 	params.getParam("transmit_filter", filt);
@@ -280,10 +282,11 @@ material_t* roughGlassMat_t::factory(paraMap_t &params, std::list< paraMap_t > &
 	params.getParam("alpha", alpha);
 	params.getParam("dispersion_power", disp_power);
 	params.getParam("fake_shadows", fake_shad);
+	params.getParam("cast_shadows",     bCastShadows);
 
 	alpha = std::max(1e-4f, std::min(alpha * 0.5f, 1.f));
 
-	roughGlassMat_t *mat = new roughGlassMat_t(IOR, filt*filtCol + color_t(1.f-filt), srCol, fake_shad, alpha, disp_power);
+	roughGlassMat_t *mat = new roughGlassMat_t(IOR, filt*filtCol + color_t(1.f-filt), srCol, fake_shad, alpha, disp_power, bCastShadows);
 
 	if( params.getParam("absorption", absorp) )
 	{

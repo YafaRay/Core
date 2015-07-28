@@ -29,8 +29,8 @@
 
 __BEGIN_YAFRAY
 
-maskMat_t::maskMat_t(const material_t *m1, const material_t *m2, CFLOAT thresh):
-	mat1(m1), mat2(m2), threshold(thresh)
+maskMat_t::maskMat_t(const material_t *m1, const material_t *m2, CFLOAT thresh, bool bCastShadows):
+	mat1(m1), mat2(m2), threshold(thresh), mCastShadows(bCastShadows)
 {
 	bsdfFlags = mat1->getFlags() | mat2->getFlags();
 }
@@ -134,6 +134,7 @@ material_t* maskMat_t::factory(paraMap_t &params, std::list< paraMap_t > &eparam
 	const std::string *name = 0;
 	const material_t *m1=0, *m2=0;
 	double thresh = 0.5;
+	bool bCastShadows=true;
 	
 	params.getParam("threshold", thresh);
 	if(! params.getParam("material1", name) ) return 0;
@@ -142,10 +143,11 @@ material_t* maskMat_t::factory(paraMap_t &params, std::list< paraMap_t > &eparam
 	m2 = env.getMaterial(*name);
 	//if(! params.getParam("mask", name) ) return 0;
 	//mask = env.getTexture(*name);
+	params.getParam("cast_shadows",     bCastShadows);
 	
 	if(m1==0 || m2==0 ) return 0;
 	
-	maskMat_t *mat = new maskMat_t(m1, m2, thresh);
+	maskMat_t *mat = new maskMat_t(m1, m2, thresh, bCastShadows);
 	
 	std::vector<shaderNode_t *> roots;
 	if(mat->loadNodes(eparams, env))

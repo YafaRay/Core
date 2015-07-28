@@ -28,12 +28,13 @@ __BEGIN_YAFRAY
 class glassMat_t: public nodeMaterial_t
 {
 	public:
-		glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS);
+		glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS, bool bCastShadows);
         virtual void initBSDF(const renderState_t &state, surfacePoint_t &sp, unsigned int &bsdfTypes)const;
 		virtual color_t eval(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wl, BSDF_t bsdfs)const {return color_t(0.0);}
 		virtual color_t sample(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, vector3d_t &wi, sample_t &s, float &W)const;
 		virtual float pdf(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo, const vector3d_t &wi, BSDF_t bsdfs)const {return 0.f;}
 		virtual bool isTransparent() const { return fakeShadow; }
+		virtual bool castShadows() const { return mCastShadows; }
 		virtual color_t getTransparency(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo)const;
 		virtual CFLOAT getAlpha(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo)const;
 		virtual void getSpecular(const renderState_t &state, const surfacePoint_t &sp, const vector3d_t &wo,
@@ -50,11 +51,12 @@ class glassMat_t: public nodeMaterial_t
 		BSDF_t tmFlags;
 		PFLOAT dispersion_power;
 		PFLOAT CauchyA, CauchyB;
+		bool mCastShadows; //!< enables/disables casting shadows. It should always be enabled except in specific cases.
 };
 
-glassMat_t::glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS):
+glassMat_t::glassMat_t(float IOR, color_t filtC, const color_t &srcol, double disp_pow, bool fakeS, bool bCastShadows):
 		bumpS(0), mirColS(0), filterCol(filtC), specRefCol(srcol), absorb(false), disperse(false),
-		fakeShadow(fakeS), dispersion_power(disp_pow)
+		fakeShadow(fakeS), dispersion_power(disp_pow), mCastShadows(bCastShadows)
 {
 	ior=IOR;
 	bsdfFlags = BSDF_ALL_SPECULAR;
@@ -265,13 +267,16 @@ material_t* glassMat_t::factory(paraMap_t &params, std::list< paraMap_t > &param
 	color_t filtCol(1.f), absorp(1.f), srCol(1.f);
 	const std::string *name=0;
 	bool fake_shad = false;
+	bool bCastShadows = true;
+	
 	params.getParam("IOR", IOR);
 	params.getParam("filter_color", filtCol);
 	params.getParam("transmit_filter", filt);
 	params.getParam("mirror_color", srCol);
 	params.getParam("dispersion_power", disp_power);
 	params.getParam("fake_shadows", fake_shad);
-	glassMat_t *mat = new glassMat_t(IOR, filt*filtCol + color_t(1.f-filt), srCol, disp_power, fake_shad);
+	params.getParam("cast_shadows",     bCastShadows);
+	glassMat_t *mat = new glassMat_t(IOR, filt*filtCol + color_t(1.f-filt), srCol, disp_power, fake_shad, bCastShadows);
 	if( params.getParam("absorption", absorp) )
 	{
 		double dist=1.f;
