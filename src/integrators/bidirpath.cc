@@ -149,6 +149,8 @@ protected:
 	float fNumLights;
 	std::map <const light_t*, CFLOAT> invLightPowerD;
 	imageFilm_t *lightImage;
+	bool transpBackground; //! Render background as transparent
+	bool transpRefractedBackground; //! Render refractions of background as transparent
 };
 
 biDirIntegrator_t::biDirIntegrator_t(bool transpShad, int shadowDepth): trShad(transpShad), sDepth(shadowDepth),
@@ -262,7 +264,11 @@ colorA_t biDirIntegrator_t::integrate(renderState_t &state, diffRay_t &ray) cons
 	color_t col(0.f);
 	surfacePoint_t sp;
 	ray_t testray = ray;
-
+	float alpha;
+		
+	if(transpBackground) alpha=0.0;
+	else alpha=1.0;
+	
 	if(scene->intersect(testray, sp))
 	{
 		static int dbg=0;
@@ -410,12 +416,20 @@ colorA_t biDirIntegrator_t::integrate(renderState_t &state, diffRay_t &ray) cons
 	}
 	else
 	{
-		if(background)
+		if(background && !transpRefractedBackground)
 		{
 			col += (*background)(ray, state, false);
 		}
 	}
-	return col;
+	
+	color_t colVolTransmittance = scene->volIntegrator->transmittance(state, ray);
+	color_t colVolIntegration = scene->volIntegrator->integrate(state, ray);
+
+	if(transpBackground) alpha = std::max(alpha, 1.f-colVolTransmittance.R);
+	
+	col = (col * colVolTransmittance) + colVolIntegration;	
+	
+	return colorA_t(col, alpha);
 }
 
 /* ============================================================
@@ -927,7 +941,16 @@ color_t biDirIntegrator_t::evalPathE(renderState_t &state, int s, pathData_t &pd
 
 integrator_t* biDirIntegrator_t::factory(paraMap_t &params, renderEnvironment_t &render)
 {
+	bool bg_transp = true;
+	bool bg_transp_refract = true;
+
+	params.getParam("bg_transp", bg_transp);
+	params.getParam("bg_transp_refract", bg_transp_refract);
+	
 	biDirIntegrator_t *inte = new biDirIntegrator_t();
+	// Background settings
+	inte->transpBackground = bg_transp;
+	inte->transpRefractedBackground = bg_transp_refract;
 	return inte;
 }
 

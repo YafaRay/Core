@@ -293,12 +293,8 @@ bool tiledIntegrator_t::renderTile(renderArea_t &a, int n_samples, int offset, b
 				c_ray.ydir = d_ray.dir;
 				c_ray.time = rstate.time;
 				c_ray.hasDifferentials = true;
-				// col = T * L_o + L_v
-				colorA_t colIntegration = integrate(rstate, c_ray); // L_o
-				colorA_t colVolTransmittance = scene->volIntegrator->transmittance(rstate, c_ray); // T
-				colorA_t colVolIntegration = scene->volIntegrator->integrate(rstate, c_ray); // L_v
-				colVolIntegration.A = 1.f-colVolTransmittance.A; //Fix for Volumetrics Alpha artifacts. For the Alpha of the volume itself, I will use the inverse of the Aplha calculated by the transmittance calculation. It seems to give good results for volumes rendered on top of other objects, volumes rendered on top of an opaque background and volumes rendered on top of transparent background (for later compositing). 
-				colorA_t col = (colIntegration*colVolTransmittance)+colVolIntegration;
+
+				colorA_t col = integrate(rstate, c_ray);
 				imageFilm->addSample(wt * col, j, i, dx, dy, &a);
 
 				if(do_depth)

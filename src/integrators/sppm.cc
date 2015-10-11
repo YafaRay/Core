@@ -159,14 +159,6 @@ bool SPPM::renderTile(renderArea_t &a, int n_samples, int offset, bool adaptive,
 				HitPoint &hp = hitPoints[index];
 
 				GatherInfo gInfo = traceGatherRay(rstate, c_ray, hp); // L_o
-				gInfo.photonFlux *= scene->volIntegrator->transmittance(rstate, c_ray);
-				//needed fix for a volumetric boundary alpha issue because
-				// when col.A = T.A * L_o.A + L_v.A, col.A amount is > 1.0
-				colorA_t volTransmitt = scene->volIntegrator->transmittance(rstate, c_ray);
-				colorA_t volIntegrate = scene->volIntegrator->integrate(rstate, c_ray); // Now using it to simulate for volIntegrator not using PPM, need more tests
-				volIntegrate.A = 1.f - volTransmitt.A;
-				gInfo.constantRandiance *= volTransmitt; // T
-				gInfo.constantRandiance += volIntegrate; // L_v
 				hp.constantRandiance += gInfo.constantRandiance; // accumulate the constant radiance for later usage.
 
 				// progressive refinement
@@ -815,7 +807,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 
 	else //nothing hit, return background
 	{
-		if(background)
+		if(background && !transpRefractedBackground)
 		{
 			gInfo.constantRandiance += (*background)(ray, state, false);
 		}
@@ -823,6 +815,13 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 
 	state.userdata = o_udat;
 	state.includeLights = oldIncludeLights;
+
+	colorA_t colVolTransmittance = scene->volIntegrator->transmittance(state, ray);
+	colorA_t colVolIntegration = scene->volIntegrator->integrate(state, ray);
+
+	if(transpBackground) alpha = std::max(alpha, 1.f-colVolTransmittance.R);
+	
+	gInfo.constantRandiance = (gInfo.constantRandiance * colVolTransmittance) + colVolIntegration;
 
 	gInfo.constantRandiance.A = alpha; // a small trick for just hold the alpha value.
 
@@ -886,7 +885,7 @@ integrator_t* SPPM::factory(paraMap_t &params, renderEnvironment_t &render)
 	params.getParam("bg_transp", bg_transp);
 	params.getParam("bg_transp_refract", bg_transp_refract);
 
-	SPPM* ite = new SPPM(numPhotons, _passNum,transpShad, shadowDepth);
+	SPPM* ite = new SPPM(numPhotons, _passNum, transpShad, shadowDepth);
 	ite->rDepth = raydepth;
 	ite->maxBounces = bounces;
 	ite->initialFactor = times;

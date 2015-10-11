@@ -132,11 +132,19 @@ colorA_t directLighting_t::integrate(renderState_t &state, diffRay_t &ray) const
 	}
 	else // Nothing hit, return background if any
 	{
-		if(background) col += (*background)(ray, state, false);
+		if(background && !transpRefractedBackground) col += (*background)(ray, state, false);
 	}
 
 	state.userdata = o_udat;
 	state.includeLights = oldIncludeLights;
+
+	color_t colVolTransmittance = scene->volIntegrator->transmittance(state, ray);
+	color_t colVolIntegration = scene->volIntegrator->integrate(state, ray);
+
+	if(transpBackground) alpha = std::max(alpha, 1.f-colVolTransmittance.R);
+	
+	col = (col * colVolTransmittance) + colVolIntegration;
+	
 	return colorA_t(col, alpha);
 }
 
