@@ -151,6 +151,8 @@ bool tiledIntegrator_t::render(imageFilm_t *image)
 	maxDepth = 0.f;
 	minDepth = 1e38f;
 
+	diffRaysEnabled = false;	//always false for now, reserved for future motion blur and interference features
+
 	if(scene->doDepth() && scene->normalizedDepth()) precalcDepths();
 
 	preRender();
@@ -291,15 +293,19 @@ bool tiledIntegrator_t::renderTile(renderArea_t &a, int n_samples, int offset, b
 					imageFilm->addSample(colorA_t(0.f), j, i, dx, dy, &a);
 					continue;
 				}
-				//setup ray differentials
-				d_ray = camera->shootRay(j+1+dx, i+dy, lens_u, lens_v, wt_dummy);
-				c_ray.xfrom = d_ray.from;
-				c_ray.xdir = d_ray.dir;
-				d_ray = camera->shootRay(j+dx, i+1+dy, lens_u, lens_v, wt_dummy);
-				c_ray.yfrom = d_ray.from;
-				c_ray.ydir = d_ray.dir;
+				if(diffRaysEnabled)
+				{
+					//setup ray differentials
+					d_ray = camera->shootRay(j+1+dx, i+dy, lens_u, lens_v, wt_dummy);
+					c_ray.xfrom = d_ray.from;
+					c_ray.xdir = d_ray.dir;
+					d_ray = camera->shootRay(j+dx, i+1+dy, lens_u, lens_v, wt_dummy);
+					c_ray.yfrom = d_ray.from;
+					c_ray.ydir = d_ray.dir;
+					c_ray.hasDifferentials = true;
+				}
+				
 				c_ray.time = rstate.time;
-				c_ray.hasDifferentials = true;
 
 				colorA_t col = integrate(rstate, c_ray);
 				imageFilm->addSample(wt * col, j, i, dx, dy, &a);

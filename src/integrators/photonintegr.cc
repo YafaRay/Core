@@ -799,7 +799,6 @@ colorA_t photonIntegrator_t::integrate(renderState_t &state, diffRay_t &ray) con
 		material->initBSDF(state, sp, bsdfs);
 		col += material->emit(state, sp, wo);
 		state.includeLights = false;
-		spDifferentials_t spDiff(sp, ray);
 		
 		if(finalGather)
 		{

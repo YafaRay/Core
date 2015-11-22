@@ -35,6 +35,7 @@ class YAFRAYCORE_EXPORT tiledIntegrator_t: public surfaceIntegrator_t
 		imageFilm_t *imageFilm;
 		float maxDepth; //!< Inverse of max depth from camera within the scene boundaries
 		float minDepth; //!< Distance between camera and the closest object on the scene
+		bool diffRaysEnabled;	//!< Differential rays enabled/disabled - for future motion blur / interference features
 
 };
 

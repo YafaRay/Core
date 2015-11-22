@@ -62,6 +62,8 @@ bool SPPM::render(yafaray::imageFilm_t *image)
 	maxDepth = 0.f;
 	minDepth = 1e38f;
 
+	diffRaysEnabled = false;	//always false for now, reserved for future motion blur and interference features
+
 	if(scene->doDepth() && scene->normalizedDepth()) precalcDepths();
 
 	initializePPM(); // seems could integrate into the preRender
@@ -142,17 +144,20 @@ bool SPPM::renderTile(renderArea_t &a, int n_samples, int offset, bool adaptive,
 					imageFilm->addSample(colorA_t(0.f), j, i, dx, dy, &a); //maybe not need
 					continue;
 				}
-				//setup ray differentials
-				d_ray = camera->shootRay(j+1+dx, i+dy, lens_u, lens_v, wt_dummy);
-				c_ray.xfrom = d_ray.from;
-				c_ray.xdir = d_ray.dir;
-				d_ray = camera->shootRay(j+dx, i+1+dy, lens_u, lens_v, wt_dummy);
-				c_ray.yfrom = d_ray.from;
-				c_ray.ydir = d_ray.dir;
+				if(diffRaysEnabled)
+				{
+					//setup ray differentials
+					d_ray = camera->shootRay(j+1+dx, i+dy, lens_u, lens_v, wt_dummy);
+					c_ray.xfrom = d_ray.from;
+					c_ray.xdir = d_ray.dir;
+					d_ray = camera->shootRay(j+dx, i+1+dy, lens_u, lens_v, wt_dummy);
+					c_ray.yfrom = d_ray.from;
+					c_ray.ydir = d_ray.dir;
+					c_ray.hasDifferentials = true;
+					// col = T * L_o + L_v
+				}
+				
 				c_ray.time = rstate.time;
-				c_ray.hasDifferentials = true;
-				// col = T * L_o + L_v
-				diffRay_t c_ray_copy = c_ray;
 
 				//for sppm progressive
 				int index = i*camera->resX() + j;
@@ -719,9 +724,11 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 					if(s.sampledFlags & BSDF_GLOSSY)
 					{
 						refRay = diffRay_t(sp.P, wi, scene->rayMinDist);
-						if(s.sampledFlags & BSDF_REFLECT) spDiff.reflectedRay(ray, refRay);
-						else if(s.sampledFlags & BSDF_TRANSMIT) spDiff.refractedRay(ray, refRay, material->getMatIOR());
-
+						if(diffRaysEnabled)
+						{
+							if(s.sampledFlags & BSDF_REFLECT) spDiff.reflectedRay(ray, refRay);
+							else if(s.sampledFlags & BSDF_TRANSMIT) spDiff.refractedRay(ray, refRay, material->getMatIOR());
+						}
 						t_ging = traceGatherRay(state, refRay, hp);
 						t_ging.photonFlux *=mcol * W;
 						t_ging.constantRandiance *= mcol * W;
@@ -761,7 +768,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 				if(reflect)
 				{
 					diffRay_t refRay(sp.P, dir[0], scene->rayMinDist);
-					spDiff.reflectedRay(ray, refRay); // compute the ray differentaitl
+					if(diffRaysEnabled) spDiff.reflectedRay(ray, refRay); // compute the ray differentaitl
 					GatherInfo refg = traceGatherRay(state, refRay, hp);
 					if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
 					{
@@ -778,7 +785,7 @@ GatherInfo SPPM::traceGatherRay(yafaray::renderState_t &state, yafaray::diffRay_
 				if(refract)
 				{
 					diffRay_t refRay(sp.P, dir[1], scene->rayMinDist);
-					spDiff.refractedRay(ray, refRay, material->getMatIOR());
+					if(diffRaysEnabled) spDiff.refractedRay(ray, refRay, material->getMatIOR());
 					GatherInfo refg = traceGatherRay(state, refRay, hp);
 					if((bsdfs&BSDF_VOLUMETRIC) && (vol=material->getVolumeHandler(sp.Ng * refRay.dir < 0)))
 					{
